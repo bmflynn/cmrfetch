@@ -29,12 +29,29 @@ var Ingest = &cobra.Command{
 	Use:   "ingest",
 	Short: "Ingest files from CMR",
 	Long: `
-Ingest files from CMR, providing state tracking to implement a since-last-updated
+Ingest granule results from NASA CMR (https://cmr.earthdata.nasa.gov/search).
 
-The preferred way to provide credentials is using the environment variables EARTHDATA_USER 
-and EARTHDATA_PASSWD, however, you can optionally use a netrc file by either by giving the
-path directly via --netrc=<path> or by using -n and letting it try to locate a netrc file.
+Files for granules are ingested into the directory provided by --dir to temporary files
+and renamed into place on successfull download.
+
+On successful listing of granules a file is written to keep track of the time of the last
+listing. This time can be used with the --since-lastran flag to only query for and ingest
+files that are newer than the last time a query was performed. 
+
+Any files that already exist in the directory provided by --dir are skipped by default.
+
+Authentication
+==============
+Generally, searching data from NASA CMR does not require an Earthdata login, however, in
+most cases an Earthdata login is required to download data. The preferred way to provide 
+credentials is using the environment variables EARTHDATA_USER and EARTHDATA_PASSWD, however, 
+you can optionally use a netrc file by either by giving the path directly via --netrc=<path> 
+or by using -n and letting it try to locate a netrc file.
+
 `,
+	CompletionOptions: cobra.CompletionOptions{
+		DisableDefaultCmd: true,
+	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		opts, err := newIngestOpts(cmd.Flags())
 		if err != nil {
@@ -55,6 +72,7 @@ func init() {
 	flags := Ingest.Flags()
 	flags.String("dir", "ingest", "Directory to ingest files to")
 	flags.Bool("verbose", false, "Verbose output")
+	flags.Bool("skip-existing", true, "Skip files if they already exist by name in --dir.")
 	flags.StringP("netrc", "n", "",
 		"Use the netrc file at the provided path for Earthdata credentials. If provided w/o a value, "+
 			"e.g., -n, try to set a reasonable default.")
@@ -91,6 +109,7 @@ type ingestOpts struct {
 	Temporal       []time.Time
 	CredentialFunc credentialFunc
 	NumWorkers     int
+	SkipExisting   bool
 	Verbose        bool
 }
 
@@ -139,6 +158,8 @@ func newIngestOpts(flags *pflag.FlagSet) (ingestOpts, error) {
 	if err := os.MkdirAll(opts.Dir, 0o0755); err != nil && !errors.Is(err, os.ErrExist) {
 		return opts, fmt.Errorf("failed to make working dir: %w", err)
 	}
+	opts.SkipExisting, err = flags.GetBool("skip-existing")
+	panerr(err)
 
 	opts.CollectionID, err = flags.GetString("concept-id")
 	panerr(err)
@@ -197,6 +218,16 @@ func doIngest(ctx context.Context, opts ingestOpts) error {
 	go func() {
 		defer close(granCh)
 		for _, g := range granules {
+			path := filepath.Join(opts.Dir, g.ProducerGranuleID)
+			_, err := os.Stat(path)
+			if err != nil && !errors.Is(err, os.ErrNotExist) {
+				log.WithError(err).Warnf("skipping, could not stat %s", path)
+				continue
+			}
+			if err == nil {
+				log.Infof("exists, skipping %s", path)
+				continue
+			}
 			granCh <- g
 		}
 	}()
