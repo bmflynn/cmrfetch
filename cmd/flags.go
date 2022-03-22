@@ -19,17 +19,17 @@ func (t *TimeVal) Set(s string) error {
 	return nil
 }
 
-type Timerange []time.Time
+type TimerangeVal []time.Time
 
-func (tr *Timerange) String() string { return "" }
-func (tr *Timerange) Type() string   { return "timerange" }
-func (tr *Timerange) Set(s string) error {
+func (tr *TimerangeVal) String() string { return "" }
+func (tr *TimerangeVal) Type() string   { return "timerange" }
+func (tr *TimerangeVal) Set(s string) error {
 	parts := strings.Split(s, ",")
 	if len(parts) != 2 {
 		return fmt.Errorf("expected 2 componets, got %d", len(parts))
 	}
 
-	x := Timerange([]time.Time{})
+	x := TimerangeVal([]time.Time{})
 
 	t1, err := time.Parse(time.RFC3339, parts[0])
 	if err != nil {

@@ -22,8 +22,7 @@ import (
 )
 
 var (
-	ingestSinceVal    *TimeVal
-	ingestTemporalVal Timerange
+	ingestTemporalVal TimerangeVal
 )
 
 var Ingest = &cobra.Command{
@@ -54,7 +53,7 @@ path directly via --netrc=<path> or by using -n and letting it try to locate a n
 
 func init() {
 	flags := Ingest.Flags()
-	flags.String("dir", ".", "Directory to ingest files to")
+	flags.String("dir", "ingest", "Directory to ingest files to")
 	flags.Bool("verbose", false, "Verbose output")
 	flags.StringP("netrc", "n", "",
 		"Use the netrc file at the provided path for Earthdata credentials. If provided w/o a value, "+
@@ -63,11 +62,12 @@ func init() {
 	flags.StringP("concept-id", "c", "", "Concept ID of the collection the granule belongs to.")
 	flags.StringP("product", "p", "",
 		"Forward slash separated provider, shortname, and version that will be used to lookup the concept id at runtime.")
-	flags.VarP(
-		ingestSinceVal,
-		"since", "s",
-		"only granules updated since this tims as  <yyyy-mm-dd>T<hh:mm:ss>Z. "+
-			"See https://cmr.earthdata.nasa.gov/search/site/docs/search/api.html#g-updated-since",
+	flags.BoolP(
+		"since-lastran", "s",
+		false,
+		"Only query for granules updated since the last time run. The last time ran is determined "+
+			"by the state file `last_ran` in the directory provided by --dir. If no state file exists "+
+			"one will be created when a granule query returns successfully.",
 	)
 	flags.VarP(
 		&ingestTemporalVal, "temporal", "t",
@@ -94,6 +94,34 @@ type ingestOpts struct {
 	Verbose        bool
 }
 
+const lastRanFile = "last_ran"
+
+func readLastRan(dir string) (*time.Time, error) {
+	path := filepath.Join(dir, lastRanFile)
+	dat, err := ioutil.ReadFile(path)
+	log.Debugf("last_ran %s", string(dat))
+	if errors.Is(err, os.ErrNotExist) {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	var t time.Time
+	if err := json.Unmarshal(dat, &t); err != nil {
+		return nil, nil
+	}
+	return &t, nil
+}
+
+func writeLastRan(dir string) error {
+	path := filepath.Join(dir, lastRanFile)
+	dat, err := json.Marshal(time.Now().UTC())
+	if err != nil {
+		return err
+	}
+	return ioutil.WriteFile(path, dat, 0o644)
+}
+
 func newIngestOpts(flags *pflag.FlagSet) (ingestOpts, error) {
 	panerr := func(err error) {
 		if err != nil {
@@ -108,6 +136,10 @@ func newIngestOpts(flags *pflag.FlagSet) (ingestOpts, error) {
 	panerr(err)
 	opts.Dir, err = flags.GetString("dir")
 	panerr(err)
+	if err := os.MkdirAll(opts.Dir, 0o0755); err != nil && !errors.Is(err, os.ErrExist) {
+		return opts, fmt.Errorf("failed to make working dir: %w", err)
+	}
+
 	opts.CollectionID, err = flags.GetString("concept-id")
 	panerr(err)
 	opts.NumWorkers, err = flags.GetInt("workers")
@@ -115,8 +147,14 @@ func newIngestOpts(flags *pflag.FlagSet) (ingestOpts, error) {
 	if opts.NumWorkers < 1 || opts.NumWorkers > 5 {
 		return opts, fmt.Errorf("workers must be 1 to 5")
 	}
+	if sinceLast, err := flags.GetBool("since-lastran"); sinceLast {
+		panerr(err)
+		opts.Since, err = readLastRan(opts.Dir)
+		if err != nil {
+			log.WithError(err).Warn("failed to read last_ran")
+		}
+	}
 
-	opts.Since = (*time.Time)(ingestSinceVal)
 	opts.Temporal = ([]time.Time)(ingestTemporalVal)
 
 	if f := flags.Lookup("netrc"); f != nil && f.Changed {
@@ -139,8 +177,30 @@ func newIngestOpts(flags *pflag.FlagSet) (ingestOpts, error) {
 }
 
 func doIngest(ctx context.Context, opts ingestOpts) error {
+	if opts.Since != nil {
+		log.Infof("querying for granules since %s", opts.Since)
+	}
 	api := internal.NewCMRAPI()
-	granules, listErrs := api.Granules(opts.CollectionID, opts.Temporal, opts.Since)
+	granules, err := api.Granules(opts.CollectionID, opts.Temporal, opts.Since)
+	if err != nil {
+		return fmt.Errorf("querying granules: %w", err)
+	}
+	writeLastRan(opts.Dir)
+
+	if len(granules) == 0 {
+		log.Info("no granules")
+		return nil
+	}
+	log.Infof("%d granules", len(granules))
+
+	granCh := make(chan internal.Granule)
+	go func() {
+		defer close(granCh)
+		for _, g := range granules {
+			granCh <- g
+		}
+	}()
+
 	ingestErrs := make(chan error)
 
 	wg := sync.WaitGroup{}
@@ -153,10 +213,10 @@ func doIngest(ctx context.Context, opts ingestOpts) error {
 		}
 		go func() {
 			defer wg.Done()
-			worker(ctx, client, granules, ingestErrs, opts.Dir)
+			worker(ctx, client, granCh, ingestErrs, opts.Dir)
 		}()
 	}
-	log.WithField("count", opts.NumWorkers).Info("started workers")
+	log.WithField("count", opts.NumWorkers).Debug("started workers")
 
 	// Close the errors change when all the workers are done
 	go func() {
@@ -179,7 +239,7 @@ func doIngest(ctx context.Context, opts ingestOpts) error {
 		}
 	}
 
-	return <-listErrs
+	return nil
 }
 
 func writeErr(dlErr *downloadError, dir string) error {
@@ -247,14 +307,16 @@ func download(ctx context.Context, client *http.Client, g internal.Granule, dir 
 	}
 
 	path := filepath.Join(dir, g.ProducerGranuleID)
-	f, err := os.OpenFile(path, os.O_WRONLY|os.O_CREATE, 0o644)
+	tmppath := path + ".tmp"
+	f, err := os.OpenFile(tmppath, os.O_WRONLY|os.O_CREATE, 0o644)
 	if err != nil {
-		return &downloadError{fmt.Sprintf("opening dest %s: %s", path, err), g}
+		return &downloadError{fmt.Sprintf("opening dest %s: %s", tmppath, err), g}
 	}
 
 	_, err = io.Copy(f, resp.Body)
 	if err != nil {
-		return &downloadError{fmt.Sprintf("writing file %s: %s", path, err), g}
+		return &downloadError{fmt.Sprintf("writing file %s: %s", tmppath, err), g}
 	}
-	return nil
+
+	return os.Rename(tmppath, path)
 }

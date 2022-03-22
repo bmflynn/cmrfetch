@@ -7,12 +7,13 @@ import (
 	"strings"
 	"time"
 
+	"github.com/apex/log"
 	"github.com/spf13/cobra"
 	"gitlab.ssec.wisc.edu/brucef/cmrfetch/internal"
 )
 
 var (
-	granuleTimerange = Timerange{}
+	granuleTimerange = TimerangeVal{}
 	sinceTime        *TimeVal
 )
 
@@ -79,6 +80,8 @@ Name                                                        Updated             
 {{ range .Data -}}
 {{ printf "%-60s" .ProducerGranuleID }}{{ .Updated.Format "2006-01-02T15:04:05Z" | printf "%-24s" }}{{ .DownloadURL }}
 {{ end -}}
+==============
+Total: {{ len .Data }}
 `
 
 func do(id string, productParts []string, since *time.Time, header bool) error {
@@ -93,17 +96,17 @@ func do(id string, productParts []string, since *time.Time, header bool) error {
 		id = col.ID
 	}
 
-	granules, errs := api.Granules(id, granuleTimerange, since)
+	granules, err := api.Granules(id, granuleTimerange, since)
+	if err != nil {
+		log.WithError(err).Fatal("failed to fetch granules")
+	}
+	t := template.Must(template.New("").Parse(granuleListTmpl))
+	if err := t.Execute(os.Stdout, struct {
+		Data   []internal.Granule
+		Header bool
+	}{granules, header}); err != nil {
+		log.WithError(err).Fatalf("failed to render")
+	}
 
-	go func() {
-		t := template.Must(template.New("").Parse(granuleListTmpl))
-		if err := t.Execute(os.Stdout, struct {
-			Data   <-chan internal.Granule
-			Header bool
-		}{granules, header}); err != nil {
-			panic("error rendering template: " + err.Error())
-		}
-	}()
-
-	return <-errs
+	return nil
 }

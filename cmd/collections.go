@@ -1,10 +1,10 @@
 package cmd
 
 import (
-	"fmt"
 	"html/template"
 	"os"
 
+	"github.com/apex/log"
 	"github.com/spf13/cobra"
 	"gitlab.ssec.wisc.edu/brucef/cmrfetch/internal"
 )
@@ -27,19 +27,13 @@ var Collections = &cobra.Command{
 		}
 
 		api := internal.NewCMRAPI()
-		collections, errs := api.Collections(provider, shortName)
-		t := template.Must(template.New("").Parse(collectionListTmpl))
-		tmplErr := t.Execute(os.Stdout, collections)
-
-		// return api error first as that's more likely to be an issue
-		if apiErr := <-errs; apiErr != nil {
-			fmt.Printf("failed handling api response: %s", err)
-			os.Exit(1)
+		collections, err := api.Collections(provider, shortName)
+		if err != nil {
+			log.WithError(err).Fatal("failed to collect")
 		}
-
-		if tmplErr != nil {
-			fmt.Printf("failed rendering output: %s", tmplErr)
-			os.Exit(1)
+		t := template.Must(template.New("").Parse(collectionListTmpl))
+		if err := t.Execute(os.Stdout, collections); err != nil {
+			log.WithError(err).Fatal("template error")
 		}
 	},
 	SilenceUsage: true,
@@ -57,4 +51,6 @@ ID                  ShortName                     Version  DatasetID
 {{ range . -}}
 {{ printf "%-20s" .ID }}{{ printf "%-30s" .ShortName }}{{ printf "%-9s" .Version }}{{ .DatasetID }}
 {{ end }}
+===============
+Total: {{ len . }}
 `

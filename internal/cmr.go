@@ -9,6 +9,7 @@ import (
 	"path"
 	"path/filepath"
 	"sort"
+	"strings"
 	"time"
 )
 
@@ -48,13 +49,12 @@ func (g Granule) DownloadURL() string {
 }
 
 type Collection struct {
-	ID        string    `json:"id"`
-	ShortName string    `json:"short_name"`
-	Version   string    `json:"version_id"`
-	DatasetID string    `json:"dataset_id"`
-	Platforms []string  `json:"platforms"`
-	Links     []Link    `json:"links"`
-	Updated   time.Time `json:"updated"`
+	ID        string   `json:"id"`
+	ShortName string   `json:"short_name"`
+	Version   string   `json:"version_id"`
+	DatasetID string   `json:"dataset_id"`
+	Platforms []string `json:"platforms"`
+	Links     []Link   `json:"links"`
 }
 
 func formatTime(t time.Time) string { return t.Format("2006-01-02T15:04:05Z") }
@@ -101,69 +101,57 @@ func (api *CMRAPI) get(u *url.URL, x interface{}) error {
 	return json.NewDecoder(resp.Body).Decode(x)
 }
 
-func (api *CMRAPI) scroll(u *url.URL, pageSize int) Iter {
+func (api *CMRAPI) scroll(u *url.URL, pageSize int) ([]json.RawMessage, error) {
 
 	qry := u.Query()
 	qry.Set("page_size", "500")
 	u.RawQuery = qry.Encode()
 
-	iter := Iter{
-		URL: u,
-		Ch:  make(chan json.RawMessage),
-	}
+	current := ""
+	data := []json.RawMessage{}
 
-	go func() {
-		defer close(iter.Ch)
-
-		for {
-			// do the query
-			req, err := http.NewRequest("GET", u.String(), nil)
-			if err != nil {
-				iter.err = err
-				return
-			}
-
-			// set request header if it has been previously set
-			if iter.current != "" {
-				req.Header.Set("CMR-Search-After", iter.current)
-			}
-
-			resp, err := api.client.Do(req)
-			if err != nil {
-				iter.err = err
-				return
-			}
-			if resp.StatusCode != http.StatusOK {
-				iter.err = fmt.Errorf("expected 200, got %d", resp.StatusCode)
-				return
-			}
-
-			// empty search-after header means results should be empty and we're done
-			iter.current = resp.Header.Get("CMR-Search-After")
-			if iter.current == "" {
-				return
-			}
-
-			var doc struct {
-				Feed struct {
-					Entry json.RawMessage `json:"entry"`
-				} `json:"feed"`
-			}
-			if err := json.NewDecoder(resp.Body).Decode(&doc); err != nil {
-				iter.err = err
-				resp.Body.Close()
-				return
-			}
-			resp.Body.Close()
-
-			iter.Ch <- doc.Feed.Entry
+	for {
+		// do the query
+		req, err := http.NewRequest("GET", u.String(), nil)
+		if err != nil {
+			return data, fmt.Errorf("creating request: %w", err)
 		}
-	}()
 
-	return iter
+		// set request header if it has been previously set
+		if current != "" {
+			req.Header.Set("CMR-Search-After", current)
+		}
+
+		resp, err := api.client.Do(req)
+		if err != nil {
+			return data, err
+		}
+		if resp.StatusCode != http.StatusOK {
+			return data, fmt.Errorf("expected 200, got %d", resp.StatusCode)
+		}
+
+		// empty search-after header means results should be empty and we're done
+		current = resp.Header.Get("CMR-Search-After")
+		if current == "" {
+			return data, nil
+		}
+
+		var doc struct {
+			Feed struct {
+				Entry json.RawMessage `json:"entry"`
+			} `json:"feed"`
+		}
+		if err := json.NewDecoder(resp.Body).Decode(&doc); err != nil {
+			resp.Body.Close()
+			return data, err
+		}
+		resp.Body.Close()
+
+		data = append(data, doc.Feed.Entry)
+	}
 }
 
-func (api *CMRAPI) Granules(conceptID string, temporal []time.Time, since *time.Time) (<-chan Granule, <-chan error) {
+func (api *CMRAPI) Granules(conceptID string, temporal []time.Time, since *time.Time) ([]Granule, error) {
 	// compile the URL
 	u, _ := url.Parse(api.url.String())
 	u.Path = path.Join(u.Path, "granules.json")
@@ -177,26 +165,26 @@ func (api *CMRAPI) Granules(conceptID string, temporal []time.Time, since *time.
 	}
 	u.RawQuery = qry.Encode()
 
-	ch := make(chan Granule, 1)
-	errs := make(chan error, 1)
-	go func() {
-		defer close(ch)
-		defer close(errs)
+	data, err := api.scroll(u, 500)
+	if err != nil {
+		return nil, err
+	}
 
-		iter := api.scroll(u, 500)
-		for raw := range iter.Ch {
-			granules := []Granule{}
-			if err := json.Unmarshal(raw, &granules); err != nil {
-				errs <- err
-				return
-			}
-			for _, g := range granules {
-				ch <- g
-			}
+	granules := make([]Granule, 0, len(data))
+	for _, raw := range data {
+		fragment := []Granule{}
+		if err := json.Unmarshal(raw, &granules); err != nil {
+			return granules, fmt.Errorf("decoding %s: %w", string(raw), err)
 		}
-	}()
+		granules = append(granules, fragment...)
+	}
 
-	return ch, errs
+	// Sort by updated
+	sort.Slice(granules, func(i, j int) bool {
+		return granules[i].Updated.After(granules[j].Updated)
+	})
+
+	return granules, nil
 }
 
 func (api *CMRAPI) Collection(provider, shortName, version string) (Collection, error) {
@@ -230,13 +218,13 @@ func (api *CMRAPI) Collection(provider, shortName, version string) (Collection, 
 
 	// Sort by updated
 	sort.Slice(zult.Feed.Entry, func(i, j int) bool {
-		return zult.Feed.Entry[i].Updated.Before(zult.Feed.Entry[j].Updated)
+		return strings.Compare(zult.Feed.Entry[i].ShortName, zult.Feed.Entry[j].ShortName) < 0
 	})
 
 	return zult.Feed.Entry[0], nil
 }
 
-func (api *CMRAPI) Collections(provider, shortName string) (<-chan Collection, <-chan error) {
+func (api *CMRAPI) Collections(provider, shortName string) ([]Collection, error) {
 	// compile the URL
 	u, _ := url.Parse(api.url.String())
 	u.Path = path.Join(u.Path, "collections.json")
@@ -249,23 +237,24 @@ func (api *CMRAPI) Collections(provider, shortName string) (<-chan Collection, <
 	}
 	u.RawQuery = qry.Encode()
 
-	ch := make(chan Collection, 1)
-	errs := make(chan error, 1)
-	go func() {
-		defer close(ch)
-		defer close(errs)
+	data, err := api.scroll(u, 500)
+	if err != nil {
+		return nil, err
+	}
 
-		iter := api.scroll(u, 500)
-		for raw := range iter.Ch {
-			collections := []Collection{}
-			if err := json.Unmarshal(raw, &collections); err != nil {
-				errs <- err
-				return
-			}
-			for _, c := range collections {
-				ch <- c
-			}
+	collections := make([]Collection, 0, len(data))
+	for _, raw := range data {
+		fragment := []Collection{}
+		if err := json.Unmarshal(raw, &collections); err != nil {
+			return collections, fmt.Errorf("decoding %s: %w", string(raw), err)
 		}
-	}()
-	return ch, errs
+		collections = append(collections, fragment...)
+	}
+
+	// Sort by updated
+	sort.Slice(collections, func(i, j int) bool {
+		return strings.Compare(collections[i].ShortName, collections[j].ShortName) < 0
+	})
+
+	return collections, nil
 }
