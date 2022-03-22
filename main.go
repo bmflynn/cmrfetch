@@ -5,12 +5,15 @@ import (
 	"gitlab.ssec.wisc.edu/brucef/cmrfetch/cmd"
 )
 
+var version = "<notset>"
+
 var root = &cobra.Command{
 	Use:   "cmrsearch",
 	Short: "Tools for ingesting data from NASA CMR",
 	CompletionOptions: cobra.CompletionOptions{
 		DisableDefaultCmd: true,
 	},
+	Version: version,
 }
 
 func init() {
