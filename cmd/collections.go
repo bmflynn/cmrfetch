@@ -41,7 +41,7 @@ var Collections = &cobra.Command{
 
 func init() {
 	flags := Collections.Flags()
-	flags.String("provider", "", "Provider name; `data_center` in the collection metadata.")
+	flags.String("provider", "", "Provider name, e.g., ASIPS, LAADS, etc...")
 	flags.String("shortname", "", "ShortName; `short_name` in the collection metadata.")
 }
 

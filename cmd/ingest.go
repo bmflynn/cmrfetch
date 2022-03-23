@@ -86,7 +86,9 @@ func init() {
 		"Use the netrc file at the provided path for Earthdata credentials. If provided w/o a value, "+
 			"e.g., -n, try to set a reasonable default.")
 	flags.Int("workers", 2, "Number of workers, up to 5")
-	flags.StringP("concept-id", "c", "", "Concept ID of the collection the granule belongs to.")
+	flags.StringP("concept-id", "c", "",
+		"Concept ID of the collection the granule belongs to. See the collections sub-command "+
+			"for a way to view collection concept ids for a provider.")
 	flags.StringP("product", "p", "",
 		"Forward slash separated provider, shortname, and version that will be used to lookup the concept id at runtime.")
 	flags.BoolP(
