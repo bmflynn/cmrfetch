@@ -26,7 +26,14 @@ therefore can be useful to inspect files before ingesting or for debugging.
 Note that credentials are not required for searching.
 ```
 cmrfetch granules \
-    --product=ASIPS/AERDT_L2_VIIRS_SNPP_NRT/11 \
+    --product=LAADS/AERDB_L2_VIIRS_SNPP/1.1 \
+    --temporal 2022-01-01T00:00:00Z,2022-01-02T00:00:00Z
+```
+
+Or alternatively, using concept id directly:
+```
+cmrfetch granules \
+    --concept-id=C1560216482-LAADS \
     --temporal 2022-01-01T00:00:00Z,2022-01-02T00:00:00Z
 ```
 
