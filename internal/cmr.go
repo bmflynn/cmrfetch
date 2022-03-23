@@ -3,6 +3,7 @@ package internal
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 	"os"
@@ -61,15 +62,16 @@ type Collection struct {
 
 func formatTime(t time.Time) string { return t.Format("2006-01-02T15:04:05Z") }
 
-type Iter struct {
-	current string
-	err     error
-
-	URL *url.URL
-	Ch  chan json.RawMessage
+func decodeErrors(r io.Reader) string {
+	zult := struct {
+		Errors []string `json:"errors"`
+	}{}
+	if err := json.NewDecoder(r).Decode(&zult); err != nil {
+		log.WithError(err).Debugf("unable to decode errors")
+		return "unknown error"
+	}
+	return strings.Join(zult.Errors, "; ")
 }
-
-func (i Iter) Err() error { return i.err }
 
 type CMRAPI struct {
 	url *url.URL
@@ -96,7 +98,9 @@ func (api *CMRAPI) get(u *url.URL, x interface{}) error {
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK {
+	if resp.StatusCode == http.StatusBadRequest {
+		return fmt.Errorf("bad request: %s", decodeErrors(resp.Body))
+	} else if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("expected status 200, got %d for %s", resp.StatusCode, u)
 	}
 
@@ -128,8 +132,10 @@ func (api *CMRAPI) scroll(u *url.URL, pageSize int) ([]json.RawMessage, error) {
 		if err != nil {
 			return data, err
 		}
-		if resp.StatusCode != http.StatusOK {
-			return data, fmt.Errorf("expected 200, got %d", resp.StatusCode)
+		if resp.StatusCode == http.StatusBadRequest {
+			return nil, fmt.Errorf("bad request: %s", decodeErrors(resp.Body))
+		} else if resp.StatusCode != http.StatusOK {
+			return nil, fmt.Errorf("expected status 200, got %d for %s", resp.StatusCode, u)
 		}
 
 		// empty search-after header means results should be empty and we're done
@@ -154,6 +160,9 @@ func (api *CMRAPI) scroll(u *url.URL, pageSize int) ([]json.RawMessage, error) {
 }
 
 func (api *CMRAPI) Granules(conceptID string, temporal []time.Time, since *time.Time) ([]Granule, error) {
+	if conceptID == "" {
+		return nil, fmt.Errorf("concept id is required")
+	}
 	// compile the URL
 	u, _ := url.Parse(api.url.String())
 	u.Path = path.Join(u.Path, "granules.json")

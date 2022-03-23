@@ -5,13 +5,13 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"net/http"
-	"net/url"
 	"os"
 	"os/user"
+	"path"
 	"path/filepath"
+	"strings"
 	"sync"
 	"time"
 
@@ -101,7 +101,7 @@ func init() {
 	flags.VarP(
 		&ingestTemporalVal, "temporal", "t",
 		"Comma separated granule start and end time to search over where time "+
-			"format is <yyyy-mm-dd>T<hh:mm:ss>Z. "+
+			"format is <yyyy-mm-dd>T<hh:mm:ss>Z. Start and end are inclusive."+
 			"See https://cmr.earthdata.nasa.gov/search/site/docs/search/api.html#g-temporal.")
 
 	// Determine default netrc location
@@ -115,6 +115,7 @@ func init() {
 
 type ingestOpts struct {
 	Dir            string
+	Product        []string
 	CollectionID   string
 	Since          *time.Time
 	Temporal       []time.Time
@@ -122,34 +123,6 @@ type ingestOpts struct {
 	NumWorkers     int
 	Clobber        bool
 	Verbose        bool
-}
-
-const lastRanFile = "last_ran"
-
-func readLastRan(dir string) (*time.Time, error) {
-	path := filepath.Join(dir, lastRanFile)
-	dat, err := ioutil.ReadFile(path)
-	log.Debugf("last_ran %s", string(dat))
-	if errors.Is(err, os.ErrNotExist) {
-		return nil, nil
-	}
-	if err != nil {
-		return nil, err
-	}
-	var t time.Time
-	if err := json.Unmarshal(dat, &t); err != nil {
-		return nil, nil
-	}
-	return &t, nil
-}
-
-func writeLastRan(dir string) error {
-	path := filepath.Join(dir, lastRanFile)
-	dat, err := json.Marshal(time.Now().UTC())
-	if err != nil {
-		return err
-	}
-	return ioutil.WriteFile(path, dat, 0o644)
 }
 
 func newIngestOpts(flags *pflag.FlagSet) (ingestOpts, error) {
@@ -166,14 +139,28 @@ func newIngestOpts(flags *pflag.FlagSet) (ingestOpts, error) {
 	panerr(err)
 	opts.Dir, err = flags.GetString("dir")
 	panerr(err)
+
 	if err := os.MkdirAll(opts.Dir, 0o0755); err != nil && !errors.Is(err, os.ErrExist) {
 		return opts, fmt.Errorf("failed to make working dir: %w", err)
 	}
 	opts.Clobber, err = flags.GetBool("clobber")
 	panerr(err)
 
+	product, err := flags.GetString("product")
+	panerr(err)
+	if product != "" {
+		opts.Product = strings.Split(product, "/")
+		if len(opts.Product) != 3 {
+			return opts, fmt.Errorf("product format should be <provider>/<short name>/<version>")
+		}
+	}
 	opts.CollectionID, err = flags.GetString("concept-id")
 	panerr(err)
+
+	if opts.Product != nil && opts.CollectionID != "" {
+		return opts, fmt.Errorf("cannot provide both --concept-id and --product")
+	}
+
 	opts.NumWorkers, err = flags.GetInt("workers")
 	panerr(err)
 	if opts.NumWorkers < 1 || opts.NumWorkers > 5 {
@@ -220,11 +207,101 @@ func exists(path string) (bool, error) {
 	return true, nil
 }
 
+// writeErr writes an <name>.error file in the case of a download error. An
+// attempt is made to increment the count if an error file already exists,
+// however, errors reading the existing error file are ignored so the count
+// may be low if the error file cannot be decoded.
+func writeErr(g internal.Granule, err error, dir string) error {
+	type fileError struct {
+		Count   int              `json:"count"`
+		Last    time.Time        `json:"last"`
+		Error   string           `json:"error"`
+		Granule internal.Granule `json:"granule"`
+	}
+	obj := fileError{1, time.Now().UTC(), err.Error(), g}
+	fpath := filepath.Join(dir, path.Base(g.DownloadURL())) + ".error"
+	if _, err := os.Stat(fpath); errors.Is(err, os.ErrExist) {
+		if dat, err := ioutil.ReadFile(fpath); err == nil {
+			last := fileError{}
+			if err := json.Unmarshal(dat, &last); err == nil {
+				obj.Count = last.Count + 1
+			}
+		}
+	}
+	dat, err := json.MarshalIndent(obj, "", " ")
+	if err != nil {
+		return fmt.Errorf("serializing granule %v: %w", obj, err)
+	}
+	return ioutil.WriteFile(fpath, dat, 0o644)
+}
+
+func worker(ctx context.Context, client *http.Client, granules <-chan internal.Granule, errs chan error, dir string) {
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case gran, ok := <-granules:
+			if !ok {
+				return
+			}
+			log.WithField("id", gran.ID).Debugf("ingesting %s", gran.DownloadURL())
+			err := internal.FetchContext(ctx, client, gran.DownloadURL(), dir)
+			if err != nil {
+				errs <- err
+				if err != nil {
+					if err := writeErr(gran, err, dir); err != nil {
+						log.WithError(err).Errorf("failed to write error for %v", gran)
+					}
+				}
+			} else {
+				log.WithField("id", gran.ID).Infof("ingested %s", gran.DownloadURL())
+			}
+		}
+	}
+}
+
+const lastRanFile = "last_ran"
+
+func readLastRan(dir string) (*time.Time, error) {
+	path := filepath.Join(dir, lastRanFile)
+	dat, err := ioutil.ReadFile(path)
+	log.Debugf("last_ran %s", string(dat))
+	if errors.Is(err, os.ErrNotExist) {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	var t time.Time
+	if err := json.Unmarshal(dat, &t); err != nil {
+		return nil, nil
+	}
+	return &t, nil
+}
+
+func writeLastRan(dir string) error {
+	path := filepath.Join(dir, lastRanFile)
+	dat, err := json.Marshal(time.Now().UTC())
+	if err != nil {
+		return err
+	}
+	return ioutil.WriteFile(path, dat, 0o644)
+}
+
 func doIngest(ctx context.Context, opts ingestOpts) error {
 	if opts.Since != nil {
 		log.Infof("querying for granules since %s", opts.Since)
 	}
 	api := internal.NewCMRAPI()
+	if opts.Product != nil {
+		col, err := api.Collection(opts.Product[0], opts.Product[1], opts.Product[2])
+		if err != nil {
+			return err
+		}
+		opts.CollectionID = col.ID
+		log.Debugf("found collection %s for %v", opts.CollectionID, opts.Product)
+	}
+
 	granules, err := api.Granules(opts.CollectionID, opts.Temporal, opts.Since)
 	if err != nil {
 		return fmt.Errorf("querying granules: %w", err)
@@ -291,101 +368,4 @@ func doIngest(ctx context.Context, opts ingestOpts) error {
 	}
 
 	return nil
-}
-
-// writeErr writes an <name>.error file in the case of a download error. An
-// attempt is made to increment the count if an error file already exists,
-// however, errors reading the existing error file are ignored so the count
-// may be low if the error file cannot be decoded.
-func writeErr(dlErr *downloadError, dir string) error {
-	type fileError struct {
-		Count int            `json:"count"`
-		Last  time.Time      `json:"last"`
-		Error *downloadError `json:"error"`
-	}
-	obj := fileError{1, time.Now().UTC(), dlErr}
-	path := filepath.Join(dir, dlErr.Granule.ProducerGranuleID) + ".error"
-	if _, err := os.Stat(path); errors.Is(err, os.ErrExist) {
-		if dat, err := ioutil.ReadFile(path); err == nil {
-			last := fileError{}
-			if err := json.Unmarshal(dat, &last); err == nil {
-				obj.Count = last.Count + 1
-			}
-		}
-	}
-	dat, err := json.MarshalIndent(obj, "", " ")
-	if err != nil {
-		return fmt.Errorf("serializing granule %v: %w", dlErr, err)
-	}
-	return ioutil.WriteFile(path, dat, 0o644)
-}
-
-func worker(ctx context.Context, client *http.Client, granules <-chan internal.Granule, errs chan error, dir string) {
-	for {
-		select {
-		case <-ctx.Done():
-			return
-		case gran, ok := <-granules:
-			if !ok {
-				return
-			}
-			log.WithField("id", gran.ID).Debugf("ingesting %s", gran.DownloadURL())
-			err := download(ctx, client, gran, dir)
-			if err != nil {
-				errs <- err
-				var dlErr *downloadError
-				if errors.As(err, &dlErr) {
-					if err := writeErr(dlErr, dir); err != nil {
-						log.WithError(err).Errorf("failed to write error for %v", gran)
-					}
-				} else {
-					log.WithError(err).Errorf("worker exiting due to fatal error")
-					return
-				}
-			} else {
-				log.WithField("id", gran.ID).Infof("ingested %s", gran.DownloadURL())
-			}
-		}
-	}
-}
-
-type downloadError struct {
-	Reason  string           `json:"reason"`
-	Granule internal.Granule `json:"granule"`
-}
-
-func (e *downloadError) Error() string {
-	return fmt.Sprintf("[%s] %s", e.Reason, e.Granule.DownloadURL())
-}
-
-func download(ctx context.Context, client *http.Client, g internal.Granule, dir string) error {
-	req, err := http.NewRequestWithContext(ctx, "GET", g.DownloadURL(), nil)
-	if err != nil {
-		return err // shouldn't really happen
-	}
-
-	resp, err := client.Do(req)
-	var urlErr *url.Error
-	if errors.As(err, &urlErr) && urlErr.Timeout() {
-		return &downloadError{"timeout", g}
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return &downloadError{http.StatusText(resp.StatusCode), g}
-	}
-
-	path := filepath.Join(dir, g.ProducerGranuleID)
-	tmppath := path + ".tmp"
-	f, err := os.OpenFile(tmppath, os.O_WRONLY|os.O_CREATE, 0o644)
-	if err != nil {
-		return &downloadError{fmt.Sprintf("opening dest %s: %s", tmppath, err), g}
-	}
-
-	_, err = io.Copy(f, resp.Body)
-	if err != nil {
-		return &downloadError{fmt.Sprintf("writing file %s: %s", tmppath, err), g}
-	}
-
-	return os.Rename(tmppath, path)
 }
