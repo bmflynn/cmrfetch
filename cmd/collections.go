@@ -11,7 +11,7 @@ import (
 
 var Collections = &cobra.Command{
 	Use:   "collections",
-	Short: "List collections",
+	Short: "List collection metadata",
 	Run: func(cmd *cobra.Command, args []string) {
 		flags := cmd.Flags()
 		provider, err := flags.GetString("provider")
@@ -50,7 +50,7 @@ ID                  ShortName                     Version  DatasetID
 ============================================================================================================
 {{ range . -}}
 {{ printf "%-20s" .ID }}{{ printf "%-30s" .ShortName }}{{ printf "%-9s" .Version }}{{ .DatasetID }}
-{{ end }}
+{{ end -}}
 ===============
 Total: {{ len . }}
 `

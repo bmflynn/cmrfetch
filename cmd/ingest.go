@@ -26,27 +26,36 @@ var (
 )
 
 var Ingest = &cobra.Command{
-	Use:   "ingest",
+	Use:   "cmrfetch {-c ID | -p PRODUCT}",
 	Short: "Ingest files from CMR",
-	Long: `
-Ingest granule results from NASA CMR (https://cmr.earthdata.nasa.gov/search).
+	Long: `Ingest granule files from NASA CMR (https://cmr.earthdata.nasa.gov).
+	
+This was implemented and tested using granules provided by LAADS and ASIPS, however, it
+may work with other providers as well, but your mileage may vary.
 
 Files for granules are ingested into the directory provided by --dir to temporary files
-and renamed into place on successfull download.
+and renamed into place on successfull download. If a download fails an error file will be
+created with the name of the granule and a .error extension.
 
-On successful listing of granules a file is written to keep track of the time of the last
-listing. This time can be used with the --since-lastran flag to only query for and ingest
-files that are newer than the last time a query was performed. 
+On a successful granules listing state is written to --dir to keep track of the time of 
+the last listing. This state is always written but only used if the --since-lastran flag
+is used to limit the query to files since the last time ran.
 
-Any files that already exist in the directory provided by --dir are skipped by default.
+If a file listed already exists by name in --dir it will by default be skipped. To force
+the download of existing files use --clobber.
 
 Authentication
 ==============
 Generally, searching data from NASA CMR does not require an Earthdata login, however, in
-most cases an Earthdata login is required to download data. The preferred way to provide 
-credentials is using the environment variables EARTHDATA_USER and EARTHDATA_PASSWD, however, 
-you can optionally use a netrc file by either by giving the path directly via --netrc=<path> 
-or by using -n and letting it try to locate a netrc file.
+most cases an Earthdata login is required to download data. To register for an Earthdata
+account see https://urs.earthdata.nasa.gov/. 
+
+The preferred way to provide credentials is using the environment variables EARTHDATA_USER 
+and EARTHDATA_PASSWD. Both variables must be set or no credentials will be available.
+
+You can also use a netrc file by either by giving the path directly via --netrc=<path> or 
+by using -n in which case it will look for .netrc in the logged in user's home dir or ./netrc
+if the user's home dir is not available.
 
 `,
 	CompletionOptions: cobra.CompletionOptions{
@@ -72,7 +81,7 @@ func init() {
 	flags := Ingest.Flags()
 	flags.String("dir", "ingest", "Directory to ingest files to")
 	flags.Bool("verbose", false, "Verbose output")
-	flags.Bool("skip-existing", true, "Skip files if they already exist by name in --dir.")
+	flags.Bool("clobber", false, "Overwrite exiting files in --dir")
 	flags.StringP("netrc", "n", "",
 		"Use the netrc file at the provided path for Earthdata credentials. If provided w/o a value, "+
 			"e.g., -n, try to set a reasonable default.")
@@ -109,7 +118,7 @@ type ingestOpts struct {
 	Temporal       []time.Time
 	CredentialFunc credentialFunc
 	NumWorkers     int
-	SkipExisting   bool
+	Clobber        bool
 	Verbose        bool
 }
 
@@ -158,7 +167,7 @@ func newIngestOpts(flags *pflag.FlagSet) (ingestOpts, error) {
 	if err := os.MkdirAll(opts.Dir, 0o0755); err != nil && !errors.Is(err, os.ErrExist) {
 		return opts, fmt.Errorf("failed to make working dir: %w", err)
 	}
-	opts.SkipExisting, err = flags.GetBool("skip-existing")
+	opts.Clobber, err = flags.GetBool("clobber")
 	panerr(err)
 
 	opts.CollectionID, err = flags.GetString("concept-id")
@@ -197,6 +206,18 @@ func newIngestOpts(flags *pflag.FlagSet) (ingestOpts, error) {
 	return opts, nil
 }
 
+// exists returns true if a file exists or false on error or if it does not
+func exists(path string) (bool, error) {
+	_, err := os.Stat(path)
+	switch {
+	case errors.Is(err, os.ErrNotExist):
+		return false, nil
+	case err != nil:
+		return false, err
+	}
+	return true, nil
+}
+
 func doIngest(ctx context.Context, opts ingestOpts) error {
 	if opts.Since != nil {
 		log.Infof("querying for granules since %s", opts.Since)
@@ -219,14 +240,11 @@ func doIngest(ctx context.Context, opts ingestOpts) error {
 		defer close(granCh)
 		for _, g := range granules {
 			path := filepath.Join(opts.Dir, g.ProducerGranuleID)
-			_, err := os.Stat(path)
-			if err != nil && !errors.Is(err, os.ErrNotExist) {
-				log.WithError(err).Warnf("skipping, could not stat %s", path)
-				continue
-			}
-			if err == nil {
-				log.Infof("exists, skipping %s", path)
-				continue
+			if !opts.Clobber {
+				if ok, _ := exists(path); ok {
+					log.Infof("exists, skipping %s", path)
+					continue
+				}
 			}
 			granCh <- g
 		}
@@ -273,12 +291,30 @@ func doIngest(ctx context.Context, opts ingestOpts) error {
 	return nil
 }
 
+// writeErr writes an <name>.error file in the case of a download error. An
+// attempt is made to increment the count if an error file already exists,
+// however, errors reading the existing error file are ignored so the count
+// may be low if the error file cannot be decoded.
 func writeErr(dlErr *downloadError, dir string) error {
-	dat, err := json.MarshalIndent(dlErr, "", " ")
+	type fileError struct {
+		Count int            `json:"count"`
+		Last  time.Time      `json:"last"`
+		Error *downloadError `json:"error"`
+	}
+	obj := fileError{1, time.Now().UTC(), dlErr}
+	path := filepath.Join(dir, dlErr.Granule.ProducerGranuleID) + ".error"
+	if _, err := os.Stat(path); errors.Is(err, os.ErrExist) {
+		if dat, err := ioutil.ReadFile(path); err == nil {
+			last := fileError{}
+			if err := json.Unmarshal(dat, &last); err == nil {
+				obj.Count = last.Count + 1
+			}
+		}
+	}
+	dat, err := json.MarshalIndent(obj, "", " ")
 	if err != nil {
 		return fmt.Errorf("serializing granule %v: %w", dlErr, err)
 	}
-	path := filepath.Join(dir, dlErr.Granule.ProducerGranuleID) + ".error"
 	return ioutil.WriteFile(path, dat, 0o644)
 }
 

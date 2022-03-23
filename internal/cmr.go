@@ -192,6 +192,7 @@ func (api *CMRAPI) Collection(provider, shortName, version string) (Collection, 
 	u, _ := url.Parse(api.url.String())
 	u.Path = path.Join(u.Path, "collections.json")
 	qry := url.Values{}
+	qry.Set("sort_key[]", "-revision_date")
 	if provider != "" {
 		qry.Add("provider", provider)
 	}
@@ -229,6 +230,7 @@ func (api *CMRAPI) Collections(provider, shortName string) ([]Collection, error)
 	u, _ := url.Parse(api.url.String())
 	u.Path = path.Join(u.Path, "collections.json")
 	qry := url.Values{}
+	qry.Set("sort_key[]", "-revision_date")
 	if provider != "" {
 		qry.Add("provider", provider)
 	}

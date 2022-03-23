@@ -19,7 +19,7 @@ var (
 
 var Granules = &cobra.Command{
 	Use:   "granules {-c ID|-p PRODUCT}",
-	Short: "List granlues",
+	Short: "List granlue metadata",
 	Run: func(cmd *cobra.Command, args []string) {
 		flags := cmd.Flags()
 		id, err := flags.GetString("concept-id")
