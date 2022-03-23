@@ -10,6 +10,7 @@ var (
 )
 
 func init() {
+	root.Version = version
 	root.AddCommand(cmd.Collections)
 	root.AddCommand(cmd.Granules)
 }

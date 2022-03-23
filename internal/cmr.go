@@ -11,6 +11,8 @@ import (
 	"sort"
 	"strings"
 	"time"
+
+	"github.com/apex/log"
 )
 
 var defaultCMRAPIURL = "https://cmr.earthdata.nasa.gov/search"
@@ -158,12 +160,13 @@ func (api *CMRAPI) Granules(conceptID string, temporal []time.Time, since *time.
 	qry := url.Values{}
 	qry.Add("collection_concept_id", conceptID)
 	if len(temporal) == 2 {
-		qry.Add("temporal", fmt.Sprintf("%s,%s", formatTime(temporal[0]), formatTime(temporal[1])))
+		qry.Add("temporal", fmt.Sprintf("%v,%v", formatTime(temporal[0]), formatTime(temporal[1])))
 	}
 	if since != nil {
 		qry.Add("updated_since", formatTime(*since))
 	}
 	u.RawQuery = qry.Encode()
+	log.Debug(u.String())
 
 	data, err := api.scroll(u, 500)
 	if err != nil {
@@ -203,6 +206,7 @@ func (api *CMRAPI) Collection(provider, shortName, version string) (Collection, 
 		qry.Add("version", version)
 	}
 	u.RawQuery = qry.Encode()
+	log.Debug(u.String())
 
 	var zult struct {
 		Feed struct {
@@ -238,6 +242,7 @@ func (api *CMRAPI) Collections(provider, shortName string) ([]Collection, error)
 		qry.Add("short_name", shortName)
 	}
 	u.RawQuery = qry.Encode()
+	log.Debug(u.String())
 
 	data, err := api.scroll(u, 500)
 	if err != nil {

@@ -44,6 +44,14 @@ var Granules = &cobra.Command{
 			panic(err)
 		}
 
+		verbose, err := flags.GetBool("verbose")
+		if err != nil {
+			panic(err)
+		}
+		if verbose {
+			log.SetLevel(log.DebugLevel)
+		}
+
 		if err := do(id, productParts, (*time.Time)(sinceTime), header); err != nil {
 			fmt.Printf("failed! %s\n", err)
 			os.Exit(1)
@@ -55,6 +63,7 @@ var Granules = &cobra.Command{
 func init() {
 	flags := Granules.Flags()
 	flags.Bool("header", true, "Set to false to hide the result header")
+	flags.Bool("verbose", false, "Verbose output")
 	flags.StringP("concept-id", "c", "", "Concept ID of the collection the granule belongs to.")
 	flags.StringP("product", "p", "",
 		"Forward slash separated provider, shortname, and version that will be used to lookup the concept id at runtime.")
