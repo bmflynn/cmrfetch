@@ -27,6 +27,7 @@ import (
 )
 
 var (
+	ingestSinceVal    *TimeVal
 	ingestTemporalVal TimerangeVal
 )
 
@@ -41,10 +42,6 @@ may work with other providers as well, but your mileage may vary.
 Files for granules are ingested into the directory provided by --dir to temporary files
 and renamed into place on successfull download. If a download fails an error file will be
 created with the name of the granule and a .error extension.
-
-On a successful granules listing state is written to --dir to keep track of the time of 
-the last listing. This state is always written but only used if the --since-lastran flag
-is used to limit the query to files since the last time ran.
 
 If a file listed already exists by name in --dir it will by default be skipped. To force
 the download of existing files use --clobber.
@@ -99,12 +96,10 @@ func init() {
 			"for a way to view collection concept ids for a provider.")
 	flags.StringP("product", "p", "",
 		"<short_name>/<version> used to lookup the collection concept id at runtime")
-	flags.BoolP(
-		"since-lastran", "s",
-		false,
-		"Only query for granules updated since the last time run. The last time ran is determined "+
-			"by the state file `last_ran` in the directory provided by --dir. If no state file exists "+
-			"one will be created when a granule query returns successfully.",
+	flags.VarP(
+		ingestSinceVal,
+		"since", "s",
+		"Ingest files since this time as <yyyy-mm-dd>T<hh:mm:ss>Z",
 	)
 	flags.VarP(
 		&ingestTemporalVal, "temporal", "t",
@@ -125,8 +120,8 @@ type ingestOpts struct {
 	Dir            string
 	Product        []string
 	CollectionID   string
-	Since          *time.Time
 	Temporal       []time.Time
+	Since          *time.Time
 	CredentialFunc credentialFunc
 	NumWorkers     int
 	Clobber        bool
@@ -177,14 +172,8 @@ func newIngestOpts(flags *pflag.FlagSet) (ingestOpts, error) {
 	if opts.NumWorkers < 1 || opts.NumWorkers > 5 {
 		return opts, fmt.Errorf("workers must be 1 to 5")
 	}
-	if sinceLast, err := flags.GetBool("since-lastran"); sinceLast {
-		panerr(err)
-		opts.Since, err = readLastRan(opts.Dir)
-		if err != nil {
-			log.WithError(err).Warn("failed to read last_ran")
-		}
-	}
 
+	opts.Since = (*time.Time)(ingestSinceVal)
 	opts.Temporal = ([]time.Time)(ingestTemporalVal)
 
 	if f := flags.Lookup("netrc"); f != nil && f.Changed {
@@ -300,34 +289,6 @@ func worker(
 	}
 }
 
-const lastRanFile = "last_ran"
-
-func readLastRan(dir string) (*time.Time, error) {
-	path := filepath.Join(dir, lastRanFile)
-	dat, err := ioutil.ReadFile(path)
-	log.Debugf("last_ran %s", string(dat))
-	if errors.Is(err, os.ErrNotExist) {
-		return nil, nil
-	}
-	if err != nil {
-		return nil, err
-	}
-	var t time.Time
-	if err := json.Unmarshal(dat, &t); err != nil {
-		return nil, nil
-	}
-	return &t, nil
-}
-
-func writeLastRan(dir string) error {
-	path := filepath.Join(dir, lastRanFile)
-	dat, err := json.Marshal(time.Now().UTC())
-	if err != nil {
-		return err
-	}
-	return ioutil.WriteFile(path, dat, 0o644)
-}
-
 func doIngest(ctx context.Context, opts ingestOpts) error {
 	if opts.Since != nil {
 		log.Infof("querying for granules since %s", opts.Since)
@@ -346,7 +307,6 @@ func doIngest(ctx context.Context, opts ingestOpts) error {
 	if err != nil {
 		return fmt.Errorf("querying granules: %w", err)
 	}
-	writeLastRan(opts.Dir)
 
 	if len(granules) == 0 {
 		log.Info("no granules")

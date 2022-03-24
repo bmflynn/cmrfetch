@@ -38,11 +38,11 @@ cmrfetch granules \
 ```
 
 # Unattended scheduled/forward-stream ingest
-A typical use-case is ingesting all granules made available in forward-stream, 
-e.g., ingesting all Near-realtime data as it is made available. 
+A typical use-case is ingesting all granules made available in forward-stream,
+e.g., ingesting all Near-realtime data as it is made available.
 
 This can be accomplished with `cmrfetch` using cron with dynamically generated
-timerange over the last 72h. 
+timerange over the last 72h.
 
 Using a concept ID in a cronjob script something like:
 ```
@@ -65,7 +65,7 @@ end=$(date -d "72h ago" +%Y-%m-%dT%H:%M:%SZ)
 ) 9>${lock}
 ```
 
-All files will downloaded into `statedir` an any failed transfers will get a 
+All files will downloaded into `statedir` an any failed transfers will get a
 `<name>.error` file containing some information regarding the error. Files are downloaded
 to a temporary name until finished and moved into place. By default 2 files are downloaded
 at a time.
