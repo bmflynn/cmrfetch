@@ -31,7 +31,7 @@ var Granules = &cobra.Command{
 			panic(err)
 		}
 		productParts := strings.Split(product, "/")
-		if product != "" && len(productParts) != 3 {
+		if product != "" && len(productParts) != 2 {
 			fmt.Println("invalid product")
 			os.Exit(1)
 		}
@@ -66,11 +66,11 @@ func init() {
 	flags.Bool("verbose", false, "Verbose output")
 	flags.StringP("concept-id", "c", "", "Concept ID of the collection the granule belongs to.")
 	flags.StringP("product", "p", "",
-		"Forward slash separated provider, shortname, and version that will be used to lookup the concept id at runtime.")
+		"<short_name>/<version> used to lookup the collection concept id at runtime")
 
-	flags.VarP(
+	flags.Var(
 		sinceTime,
-		"since", "s",
+		"since",
 		"only granules updated since this tims as  <yyyy-mm-dd>T<hh:mm:ss>Z. "+
 			"See https://cmr.earthdata.nasa.gov/search/site/docs/search/api.html#g-updated-since",
 	)
@@ -83,11 +83,11 @@ func init() {
 }
 
 var granuleListTmpl = `{{ if .Header -}}
-Name                                                        Updated                 URL
-=======================================================================================-->
+Name                                                        Revision RevisionDate           URL
+=============================================================================================================-->
 {{- end }}
 {{ range .Data -}}
-{{ printf "%-60s" .ProducerGranuleID }}{{ .Updated.Format "2006-01-02T15:04:05Z" | printf "%-24s" }}{{ .DownloadURL }}
+{{ printf "%-60s" .Name }}{{ .Meta.RevisionID | printf "%-9v" }}{{ .Meta.RevisionDate.Format "2006-01-02T15:04:05Z" | printf "%-24s" }}{{ .DownloadURL }}
 {{ end -}}
 ==============
 Total: {{ len .Data }}
@@ -97,12 +97,12 @@ func do(id string, productParts []string, since *time.Time, header bool) error {
 	api := internal.NewCMRAPI()
 
 	// Determine the concept id from the parts if provided
-	if len(productParts) == 3 {
-		col, err := api.Collection(productParts[0], productParts[1], productParts[2])
+	if len(productParts) == 2 {
+		col, err := api.Collection(productParts[0], productParts[1])
 		if err != nil {
 			return fmt.Errorf("collection lookup failed: %w", err)
 		}
-		id = col.ID
+		id = col.Meta.ConceptID
 	}
 
 	granules, err := api.Granules(id, granuleTimerange, since)

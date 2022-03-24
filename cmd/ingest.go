@@ -2,9 +2,14 @@ package cmd
 
 import (
 	"context"
+	"crypto/md5"
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"hash"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -57,6 +62,8 @@ You can also use a netrc file by either by giving the path directly via --netrc=
 by using -n in which case it will look for .netrc in the logged in user's home dir or ./netrc
 if the user's home dir is not available.
 
+
+Project: https://github.com/bmflynn/cmrfetch
 `,
 	CompletionOptions: cobra.CompletionOptions{
 		DisableDefaultCmd: true,
@@ -82,6 +89,7 @@ func init() {
 	flags.String("dir", "ingest", "Directory to ingest files to")
 	flags.Bool("verbose", false, "Verbose output")
 	flags.Bool("clobber", false, "Overwrite exiting files in --dir")
+	flags.Bool("verify-checksum", true, "If true, verify the checksum if available")
 	flags.StringP("netrc", "n", "",
 		"Use the netrc file at the provided path for Earthdata credentials. If provided w/o a value, "+
 			"e.g., -n, try to set a reasonable default.")
@@ -90,7 +98,7 @@ func init() {
 		"Concept ID of the collection the granule belongs to. See the collections sub-command "+
 			"for a way to view collection concept ids for a provider.")
 	flags.StringP("product", "p", "",
-		"Forward slash separated provider, shortname, and version that will be used to lookup the concept id at runtime.")
+		"<short_name>/<version> used to lookup the collection concept id at runtime")
 	flags.BoolP(
 		"since-lastran", "s",
 		false,
@@ -123,6 +131,7 @@ type ingestOpts struct {
 	NumWorkers     int
 	Clobber        bool
 	Verbose        bool
+	VerifyChecksum bool
 }
 
 func newIngestOpts(flags *pflag.FlagSet) (ingestOpts, error) {
@@ -137,6 +146,8 @@ func newIngestOpts(flags *pflag.FlagSet) (ingestOpts, error) {
 
 	opts.Verbose, err = flags.GetBool("verbose")
 	panerr(err)
+	opts.VerifyChecksum, err = flags.GetBool("verify-checksum")
+	panerr(err)
 	opts.Dir, err = flags.GetString("dir")
 	panerr(err)
 
@@ -150,8 +161,8 @@ func newIngestOpts(flags *pflag.FlagSet) (ingestOpts, error) {
 	panerr(err)
 	if product != "" {
 		opts.Product = strings.Split(product, "/")
-		if len(opts.Product) != 3 {
-			return opts, fmt.Errorf("product format should be <provider>/<short name>/<version>")
+		if len(opts.Product) != 2 {
+			return opts, fmt.Errorf("product format should be <short_name>/<version>")
 		}
 	}
 	opts.CollectionID, err = flags.GetString("concept-id")
@@ -235,7 +246,19 @@ func writeErr(g internal.Granule, err error, dir string) error {
 	return ioutil.WriteFile(fpath, dat, 0o644)
 }
 
-func worker(ctx context.Context, client *http.Client, granules <-chan internal.Granule, errs chan error, dir string) {
+type workerError struct {
+	Granule internal.Granule
+	Err     error
+}
+
+func (e *workerError) Error() string { return e.Err.Error() }
+
+func worker(
+	ctx context.Context,
+	client *http.Client,
+	granules <-chan internal.Granule, errs chan *workerError,
+	verifyCsum bool, dir string,
+) {
 	for {
 		select {
 		case <-ctx.Done():
@@ -244,18 +267,35 @@ func worker(ctx context.Context, client *http.Client, granules <-chan internal.G
 			if !ok {
 				return
 			}
-			log.WithField("id", gran.ID).Debugf("ingesting %s", gran.DownloadURL())
-			err := internal.FetchContext(ctx, client, gran.DownloadURL(), dir)
+			log := log.WithFields(log.Fields{
+				"id":  gran.Meta.ConceptID,
+				"rev": gran.Meta.RevisionID,
+			})
+			log.Debugf("ingesting %s", gran.DownloadURL())
+			name, err := internal.FetchContext(ctx, client, gran.DownloadURL(), dir)
 			if err != nil {
-				errs <- err
-				if err != nil {
-					if err := writeErr(gran, err, dir); err != nil {
-						log.WithError(err).Errorf("failed to write error for %v", gran)
+				errs <- &workerError{gran, fmt.Errorf("fetching: %w", err)}
+				continue
+			}
+
+			if verifyCsum {
+				csum := gran.FindChecksum(name)
+				if csum == nil {
+					log.Infof("could not determine checksum for %s", name)
+				} else {
+					log.Debugf("verifying checksum for %s", name)
+					ok, err = verifyChecksum(name, csum)
+					if err != nil {
+						errs <- &workerError{gran, fmt.Errorf("checksumming: %w", err)}
+						continue
+					}
+					if !ok {
+						errs <- &workerError{gran, fmt.Errorf("checksum failed")}
+						continue
 					}
 				}
-			} else {
-				log.WithField("id", gran.ID).Infof("ingested %s", gran.DownloadURL())
 			}
+			log.Infof("ingested %s", gran.DownloadURL())
 		}
 	}
 }
@@ -294,11 +334,11 @@ func doIngest(ctx context.Context, opts ingestOpts) error {
 	}
 	api := internal.NewCMRAPI()
 	if opts.Product != nil {
-		col, err := api.Collection(opts.Product[0], opts.Product[1], opts.Product[2])
+		col, err := api.Collection(opts.Product[0], opts.Product[1])
 		if err != nil {
 			return err
 		}
-		opts.CollectionID = col.ID
+		opts.CollectionID = col.Meta.ConceptID
 		log.Debugf("found collection %s for %v", opts.CollectionID, opts.Product)
 	}
 
@@ -318,7 +358,12 @@ func doIngest(ctx context.Context, opts ingestOpts) error {
 	go func() {
 		defer close(granCh)
 		for _, g := range granules {
-			path := filepath.Join(opts.Dir, g.ProducerGranuleID)
+			name := g.Name()
+			if name == "" {
+				log.Infof("cannot determine granule name, skipping")
+				continue
+			}
+			path := filepath.Join(opts.Dir, name)
 			if !opts.Clobber {
 				if ok, _ := exists(path); ok {
 					log.Infof("exists, skipping %s", path)
@@ -329,7 +374,7 @@ func doIngest(ctx context.Context, opts ingestOpts) error {
 		}
 	}()
 
-	ingestErrs := make(chan error)
+	ingestErrs := make(chan *workerError)
 
 	wg := sync.WaitGroup{}
 	for i := 0; i < opts.NumWorkers; i++ {
@@ -341,7 +386,7 @@ func doIngest(ctx context.Context, opts ingestOpts) error {
 		}
 		go func() {
 			defer wg.Done()
-			worker(ctx, client, granCh, ingestErrs, opts.Dir)
+			worker(ctx, client, granCh, ingestErrs, opts.VerifyChecksum, opts.Dir)
 		}()
 	}
 	log.WithField("count", opts.NumWorkers).Debug("started workers")
@@ -355,17 +400,42 @@ func doIngest(ctx context.Context, opts ingestOpts) error {
 	done := false
 	for !done {
 		select {
-		case err, ok := <-ingestErrs:
+		case werr, ok := <-ingestErrs:
 			if !ok {
 				done = true
 				continue
 			}
-			log.WithError(err).Info("ingest failed")
-			// TODO: persist error
+			log.WithError(werr).Info("ingest failed")
+			if err := writeErr(werr.Granule, err, opts.Dir); err != nil {
+				log.WithError(err).Errorf("failed to write error for %v", werr.Granule)
+			}
 		case <-ctx.Done():
 			done = true
 		}
 	}
 
 	return nil
+}
+
+func verifyChecksum(name string, checksum *internal.Checksum) (bool, error) {
+	alg := strings.ReplaceAll(strings.ToLower(checksum.Algorithm), "-", "")
+
+	var h hash.Hash
+	switch alg {
+	case "md5":
+		h = md5.New()
+		// okie dokie
+	case "sha256":
+		h = sha256.New()
+	default:
+		return false, fmt.Errorf("only md5 and sha256 checksums supported, got %s", alg)
+	}
+	f, err := os.Open(name)
+	if err != nil {
+		return false, err
+	}
+	if _, err := io.Copy(h, f); err != nil {
+		return false, err
+	}
+	return checksum.Value == hex.EncodeToString(h.Sum(nil)), nil
 }

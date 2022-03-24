@@ -46,10 +46,10 @@ func init() {
 }
 
 var collectionListTmpl = `
-ID                  ShortName                     Version  DatasetID   
+ID                  ShortName                     Version Revision Description
 ============================================================================================================
 {{ range . -}}
-{{ printf "%-20s" .ID }}{{ printf "%-30s" .ShortName }}{{ printf "%-9s" .Version }}{{ .DatasetID }}
+{{ printf "%-20s" .Meta.ConceptID }}{{ printf "%-30s" .ShortName }}{{ printf "%-8v" .Version }}{{ printf "%-9v" .Meta.RevisionID }}{{ .EntryTitle }}
 {{ end -}}
 ===============
 Total: {{ len . }}

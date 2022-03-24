@@ -1,0 +1,139 @@
+{
+  "hits": 144,
+  "took": 43,
+  "items": [
+    {
+      "meta": {
+        "concept-type": "granule",
+        "concept-id": "G2239256364-LAADS",
+        "revision-id": 1,
+        "native-id": "LAADS:6887687361",
+        "provider-id": "LAADS",
+        "format": "application/echo10+xml",
+        "revision-date": "2022-03-21T12:57:49.256Z"
+      },
+      "umm": {
+        "TemporalExtent": {
+          "RangeDateTime": {
+            "BeginningDateTime": "2022-03-20T23:54:00.000Z",
+            "EndingDateTime": "2022-03-21T00:00:00.000Z"
+          }
+        },
+        "GranuleUR": "LAADS:6887687361",
+        "SpatialExtent": {
+          "HorizontalSpatialDomain": {
+            "Geometry": {
+              "GPolygons": [
+                {
+                  "Boundary": {
+                    "Points": [
+                      {
+                        "Longitude": 166.353683,
+                        "Latitude": -80.457825
+                      },
+                      {
+                        "Longitude": -86.005028,
+                        "Latitude": -65.729141
+                      },
+                      {
+                        "Longitude": -120.635086,
+                        "Latitude": -53.069603
+                      },
+                      {
+                        "Longitude": -172.224319,
+                        "Latitude": -60.846233
+                      },
+                      {
+                        "Longitude": 166.353683,
+                        "Latitude": -80.457825
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        },
+        "ProviderDates": [
+          {
+            "Date": "2022-03-21T12:57:44.020Z",
+            "Type": "Insert"
+          },
+          {
+            "Date": "2022-03-21T12:57:47.560Z",
+            "Type": "Update"
+          }
+        ],
+        "CollectionReference": {
+          "ShortName": "AERDB_L2_VIIRS_SNPP",
+          "Version": "1.1"
+        },
+        "RelatedUrls": [
+          {
+            "URL": "https://ladsweb.modaps.eosdis.nasa.gov/archive/allData/5111/AERDB_L2_VIIRS_SNPP/2022/079/AERDB_L2_VIIRS_SNPP.A2022079.2354.011.2022080125033.nc",
+            "Type": "GET DATA",
+            "MimeType": "application/x-netcdf"
+          },
+          {
+            "URL": "https://ladsweb.modaps.eosdis.nasa.gov/opendap/allData/5111/AERDB_L2_VIIRS_SNPP/2022/079/AERDB_L2_VIIRS_SNPP.A2022079.2354.011.2022080125033.nc.html",
+            "Type": "USE SERVICE API",
+            "Subtype": "OPENDAP DATA",
+            "Description": "This file may be accessed using OPeNDAP directly from this link",
+            "MimeType": "text/html"
+          },
+          {
+            "URL": "http://doi.org/10.5067/VIIRS/AERDB_L2_VIIRS_SNPP.011",
+            "Type": "VIEW RELATED INFORMATION",
+            "Description": "A link to Data set landing page",
+            "MimeType": "text/html"
+          }
+        ],
+        "Projects": [
+          {
+            "ShortName": "Not provided",
+            "Campaigns": [
+              "Suomi-NPP"
+            ]
+          }
+        ],
+        "DataGranule": {
+          "DayNightFlag": "Day",
+          "Identifiers": [
+            {
+              "Identifier": "AERDB_L2_VIIRS_SNPP.A2022079.2354.011.2022080125033.nc",
+              "IdentifierType": "ProducerGranuleId"
+            }
+          ],
+          "ProductionDateTime": "2022-03-21T12:50:33.000Z",
+          "ArchiveAndDistributionInformation": [
+            {
+              "Name": "Not provided",
+              "Size": 6.34364128112793,
+              "SizeInBytes": 6651790,
+              "Checksum": {
+                "Value": "c50d71f01aab85686afebd1fbb170721",
+                "Algorithm": "MD5"
+              },
+              "SizeUnit": "MB"
+            }
+          ]
+        },
+        "Platforms": [
+          {
+            "ShortName": "Suomi-NPP",
+            "Instruments": [
+              {
+                "ShortName": "VIIRS"
+              }
+            ]
+          }
+        ],
+        "MetadataSpecification": {
+          "URL": "https://cdn.earthdata.nasa.gov/umm/granule/v1.6.4",
+          "Name": "UMM-G",
+          "Version": "1.6.4"
+        }
+      }
+    }
+  ]
+}

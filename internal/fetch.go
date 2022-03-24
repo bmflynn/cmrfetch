@@ -10,37 +10,37 @@ import (
 	"path/filepath"
 )
 
-func Fetch(client *http.Client, downloadURL string, dir string) error {
+func Fetch(client *http.Client, downloadURL string, dir string) (string, error) {
 	return FetchContext(context.Background(), client, downloadURL, dir)
 }
 
-func FetchContext(ctx context.Context, client *http.Client, downloadURL string, dir string) error {
+func FetchContext(ctx context.Context, client *http.Client, downloadURL string, dir string) (string, error) {
 	req, err := http.NewRequestWithContext(ctx, "GET", downloadURL, nil)
 	if err != nil {
-		return err // shouldn't really happen
+		return "", err // shouldn't really happen
 	}
 
 	resp, err := client.Do(req)
 	if err != nil {
-		return err
+		return "", err
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("[%v] %s", resp.StatusCode, http.StatusText(resp.StatusCode))
+		return "", fmt.Errorf("[%v] %s", resp.StatusCode, http.StatusText(resp.StatusCode))
 	}
 
 	fpath := filepath.Join(dir, path.Base(downloadURL))
 	tmppath := fpath + ".tmp"
 	f, err := os.OpenFile(tmppath, os.O_WRONLY|os.O_CREATE, 0o644)
 	if err != nil {
-		return fmt.Errorf("opening dest %s: %w", tmppath, err)
+		return "", fmt.Errorf("opening dest %s: %w", tmppath, err)
 	}
 
 	_, err = io.Copy(f, resp.Body)
 	if err != nil {
-		return fmt.Errorf("writing file %s: %w", tmppath, err)
+		return "", fmt.Errorf("writing file %s: %w", tmppath, err)
 	}
 
-	return os.Rename(tmppath, fpath)
+	return fpath, os.Rename(tmppath, fpath)
 }

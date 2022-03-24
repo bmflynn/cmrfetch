@@ -9,7 +9,6 @@ import (
 	"os"
 	"path"
 	"path/filepath"
-	"sort"
 	"strings"
 	"time"
 
@@ -18,46 +17,159 @@ import (
 
 var defaultCMRAPIURL = "https://cmr.earthdata.nasa.gov/search"
 
-const dataRel = "http://esipfed.org/ns/fedsearch/1.1/data#"
-
-func init() {
-	if s, ok := os.LookupEnv("EARTHDATA_CMR_API"); ok {
-		defaultCMRAPIURL = s
-	}
+type URL struct {
+	URL            string
+	Type           string
+	MimeType       string
+	URLContentType string
+	Description    string
 }
 
-type Link struct {
-	Rel  string `json:"rel"`
-	Type string `json:"type"`
-	HREF string `json:"href"`
+type Date struct {
+	Date time.Time
+	Type string
+}
+
+type CollectionRef struct {
+	ShortName string
+	Version   string
+}
+
+type Identifier struct {
+	Identifier     string
+	IdentifierType string
+}
+
+type Checksum struct {
+	Algorithm string
+	Value     string
+}
+
+type ArchiveInfo struct {
+	Name        string
+	SizeInBytes int64
+	Checksum    Checksum
+}
+
+type RangeDateTime struct {
+	BeginningDateTime time.Time
+	EndingDateTime    time.Time
+}
+
+type DataGranule struct {
+	DayNightFlag                      string
+	Identifiers                       []Identifier
+	ProductionDateTime                time.Time
+	ArchiveAndDistributionInformation []ArchiveInfo
+}
+
+type Meta struct {
+	RevisionID   int       `json:"revision-id"`
+	Deleted      bool      `json:"deleted"`
+	ProviderID   string    `json:"provider-id"`
+	ConceptID    string    `json:"concept-id"`
+	NativeID     string    `json:"native-id"`
+	RevisionDate time.Time `json:"revision-date"`
 }
 
 type Granule struct {
-	ID                string    `json:"id"`
-	ProducerGranuleID string    `json:"producer_granule_id"` // a.k.a., filename
-	Links             []Link    `json:"links"`
-	Updated           time.Time `json:"updated"`
+	Meta                Meta
+	GranuleUR           string
+	SpatialExtent       map[string]interface{}
+	ProviderDates       []Date
+	RelatedUrls         []URL
+	CollectionReference CollectionRef
+	DataGranule         DataGranule
+	TemporalExtent      struct {
+		RangeDateTime RangeDateTime
+	}
 }
 
-// DownloadURL attempts to locate the download url in our links by matching the file
-// extension.
-func (g Granule) DownloadURL() string {
-	ext := filepath.Ext(g.ProducerGranuleID)
-	for _, link := range g.Links {
-		if link.Rel == dataRel && filepath.Ext(link.HREF) == ext {
-			return link.HREF
+func (g Granule) Name() string {
+	for _, i := range g.DataGranule.Identifiers {
+		if i.IdentifierType == "ProducerGranuleId" {
+			return i.Identifier
 		}
 	}
 	return ""
 }
 
+func (g Granule) DownloadURL() string {
+	name := g.Name()
+	if name == "" {
+		return ""
+	}
+
+	ext := filepath.Ext(name)
+	for _, url := range g.RelatedUrls {
+		if url.Type == "GET DATA" && filepath.Ext(url.URL) == ext {
+			return url.URL
+		}
+	}
+
+	return ""
+}
+
+func (g Granule) FindChecksum(name string) *Checksum {
+	for _, info := range g.DataGranule.ArchiveAndDistributionInformation {
+		if info.Name == name {
+			return &info.Checksum
+		}
+	}
+	return nil
+}
+
+type Instrument struct {
+	ShortName string
+	LongName  string
+}
+
+type Platform struct {
+	ShortName   string
+	LongName    string
+	Type        string
+	Instruments []Instrument
+}
+
 type Collection struct {
-	ID        string   `json:"id"`
-	ShortName string   `json:"short_name"`
-	Version   string   `json:"version_id"`
-	DatasetID string   `json:"dataset_id"`
-	Platforms []string `json:"platforms"`
-	Links     []Link   `json:"links"`
+	Meta               Meta
+	SpatialExtent      map[string]json.RawMessage
+	CollectionProgress string
+	ScienceKeywords    []map[string]string
+	TemporalExtents    []map[string]json.RawMessage
+	ProcessingLevel    struct {
+		ID string
+	}
+	DOI struct {
+		Authority string
+		DOI       string
+	}
+	ShortName          string
+	EntryTitle         string
+	RelatedUrls        []URL
+	Abstract           string
+	VersionDescription string
+	Version            string
+	UserConstraints    map[string]json.RawMessage
+	CollectionDataType string
+	DataCenters        []json.RawMessage
+}
+
+type ummResponse struct {
+	Hits   int             `json:"hits"`
+	Took   int             `json:"took"`
+	Items  json.RawMessage `json:"items"`
+	Errors []string        `json:"errors"`
+}
+
+type collectionResponse struct {
+	Meta Meta       `json:"meta"`
+	UMM  Collection `json:"umm"`
+}
+
+type granuleResponse struct {
+	Meta Meta    `json:"meta"`
+	UMM  Granule `json:"umm"`
 }
 
 func formatTime(t time.Time) string { return t.Format("2006-01-02T15:04:05Z") }
@@ -144,18 +256,14 @@ func (api *CMRAPI) scroll(u *url.URL, pageSize int) ([]json.RawMessage, error) {
 			return data, nil
 		}
 
-		var doc struct {
-			Feed struct {
-				Entry json.RawMessage `json:"entry"`
-			} `json:"feed"`
-		}
-		if err := json.NewDecoder(resp.Body).Decode(&doc); err != nil {
+		zult := ummResponse{}
+		if err := json.NewDecoder(resp.Body).Decode(&zult); err != nil {
 			resp.Body.Close()
 			return data, err
 		}
 		resp.Body.Close()
 
-		data = append(data, doc.Feed.Entry)
+		data = append(data, zult.Items)
 	}
 }
 
@@ -165,7 +273,7 @@ func (api *CMRAPI) Granules(conceptID string, temporal []time.Time, since *time.
 	}
 	// compile the URL
 	u, _ := url.Parse(api.url.String())
-	u.Path = path.Join(u.Path, "granules.json")
+	u.Path = path.Join(u.Path, "granules.umm_json")
 	qry := url.Values{}
 	qry.Add("collection_concept_id", conceptID)
 	if len(temporal) == 2 {
@@ -184,30 +292,27 @@ func (api *CMRAPI) Granules(conceptID string, temporal []time.Time, since *time.
 
 	granules := make([]Granule, 0, len(data))
 	for _, raw := range data {
-		fragment := []Granule{}
-		if err := json.Unmarshal(raw, &granules); err != nil {
+		zults := []granuleResponse{}
+		if err := json.Unmarshal(raw, &zults); err != nil {
 			return granules, fmt.Errorf("decoding %s: %w", string(raw), err)
 		}
-		granules = append(granules, fragment...)
+		for _, z := range zults {
+			z.UMM.Meta = z.Meta
+			g := z.UMM
+			g.Meta = z.Meta
+			granules = append(granules, g)
+		}
 	}
-
-	// Sort by updated
-	sort.Slice(granules, func(i, j int) bool {
-		return granules[i].Updated.After(granules[j].Updated)
-	})
 
 	return granules, nil
 }
 
-func (api *CMRAPI) Collection(provider, shortName, version string) (Collection, error) {
+func (api *CMRAPI) Collection(shortName, version string) (Collection, error) {
 	// compile the URL
 	u, _ := url.Parse(api.url.String())
-	u.Path = path.Join(u.Path, "collections.json")
+	u.Path = path.Join(u.Path, "collections.umm_json")
 	qry := url.Values{}
-	qry.Set("sort_key[]", "-revision_date")
-	if provider != "" {
-		qry.Add("provider", provider)
-	}
+	qry.Set("sort_key[]", "short_name")
 	if shortName != "" {
 		qry.Add("short_name", shortName)
 	}
@@ -217,33 +322,36 @@ func (api *CMRAPI) Collection(provider, shortName, version string) (Collection, 
 	u.RawQuery = qry.Encode()
 	log.Debug(u.String())
 
-	var zult struct {
-		Feed struct {
-			Entry []Collection `json:"entry"`
-		} `json:"feed"`
-	}
-	if err := api.get(u, &zult); err != nil {
+	data, err := api.scroll(u, 500)
+	if err != nil {
 		return Collection{}, err
 	}
 
-	if len(zult.Feed.Entry) == 0 {
+	collections := make([]Collection, 0, len(data))
+	for _, raw := range data {
+		zults := []collectionResponse{}
+		if err := json.Unmarshal(raw, &collections); err != nil {
+			return Collection{}, fmt.Errorf("decoding %s: %w", string(raw), err)
+		}
+		for _, z := range zults {
+			z.UMM.Meta = z.Meta
+			collections = append(collections, z.UMM)
+		}
+	}
+
+	if len(collections) == 0 {
 		return Collection{}, fmt.Errorf("not found")
 	}
 
-	// Sort by updated
-	sort.Slice(zult.Feed.Entry, func(i, j int) bool {
-		return strings.Compare(zult.Feed.Entry[i].ShortName, zult.Feed.Entry[j].ShortName) < 0
-	})
-
-	return zult.Feed.Entry[0], nil
+	return collections[0], nil
 }
 
 func (api *CMRAPI) Collections(provider, shortName string) ([]Collection, error) {
 	// compile the URL
 	u, _ := url.Parse(api.url.String())
-	u.Path = path.Join(u.Path, "collections.json")
+	u.Path = path.Join(u.Path, "collections.umm_json")
 	qry := url.Values{}
-	qry.Set("sort_key[]", "-revision_date")
+	qry.Set("sort_key[]", "short_name")
 	if provider != "" {
 		qry.Add("provider", provider)
 	}
@@ -258,19 +366,23 @@ func (api *CMRAPI) Collections(provider, shortName string) ([]Collection, error)
 		return nil, err
 	}
 
-	collections := make([]Collection, 0, len(data))
+	collections := []Collection{}
 	for _, raw := range data {
-		fragment := []Collection{}
-		if err := json.Unmarshal(raw, &collections); err != nil {
+		zults := []collectionResponse{}
+		if err := json.Unmarshal(raw, &zults); err != nil {
 			return collections, fmt.Errorf("decoding %s: %w", string(raw), err)
 		}
-		collections = append(collections, fragment...)
+		for _, z := range zults {
+			z.UMM.Meta = z.Meta
+			collections = append(collections, z.UMM)
+		}
 	}
 
-	// Sort by updated
-	sort.Slice(collections, func(i, j int) bool {
-		return strings.Compare(collections[i].ShortName, collections[j].ShortName) < 0
-	})
-
 	return collections, nil
+}
+
+func init() {
+	if s, ok := os.LookupEnv("EARTHDATA_CMR_API"); ok {
+		defaultCMRAPIURL = s
+	}
 }

@@ -1,0 +1,164 @@
+{
+  "hits": 4,
+  "took": 21,
+  "items": [
+    {
+      "meta": {
+        "revision-id": 3,
+        "deleted": false,
+        "format": "application/vnd.nasa.cmr.umm+json",
+        "provider-id": "ASIPS",
+        "user-id": "mmorahan",
+        "has-formats": false,
+        "has-spatial-subsetting": false,
+        "native-id": "mmt_collection_14170",
+        "has-transforms": false,
+        "has-variables": false,
+        "concept-id": "C2003160566-ASIPS",
+        "revision-date": "2021-04-05T14:11:50.962Z",
+        "has-temporal-subsetting": false,
+        "concept-type": "collection"
+      },
+      "umm": {
+        "SpatialExtent": {
+          "GranuleSpatialRepresentation": "GEODETIC",
+          "HorizontalSpatialDomain": {
+            "Geometry": {
+              "BoundingRectangles": [
+                {
+                  "EastBoundingCoordinate": 180.0,
+                  "NorthBoundingCoordinate": 90.0,
+                  "SouthBoundingCoordinate": -90.0,
+                  "WestBoundingCoordinate": -180.0
+                }
+              ],
+              "CoordinateSystem": "GEODETIC"
+            }
+          },
+          "SpatialCoverageType": "HORIZONTAL"
+        },
+        "CollectionProgress": "ACTIVE",
+        "ScienceKeywords": [
+          {
+            "Category": "EARTH SCIENCE",
+            "Term": "CLOUDS",
+            "Topic": "ATMOSPHERE"
+          }
+        ],
+        "TemporalExtents": [
+          {
+            "EndsAtPresentFlag": true,
+            "RangeDateTimes": [
+              {
+                "BeginningDateTime": "2020-10-08T00:00:00.000Z"
+              }
+            ]
+          }
+        ],
+        "ProcessingLevel": {
+          "Id": "2"
+        },
+        "DOI": {
+          "Authority": "https://dx.doi.org",
+          "DOI": "10.5067/VIIRS/CLDMSK_L2_VIIRS_NOAA20_NRT.001"
+        },
+        "ShortName": "CLDMSK_L2_VIIRS_NOAA20_NRT",
+        "EntryTitle": "VIIRS/NOAA-20 Cloud Mask L2 6-Min Swath 750m (NRT)",
+        "RelatedUrls": [
+          {
+            "Description": "MVCM Project Home Page",
+            "Type": "PROJECT HOME PAGE",
+            "URL": "https://cimss.ssec.wisc.edu/MVCM/",
+            "URLContentType": "CollectionURL"
+          }
+        ],
+        "Abstract": "The NOAA-20 Visible Infrared Imaging Radiometer Suite (VIIRS) NASA Level-2 (L2) Cloud Mask is one of two continuity products designed to sustain the long-term records of both Moderate Resolution Imaging Spectroradiometer (MODIS) and VIIRS heritages. CLDMSK_L2_VIIRS_NOAA20_NRT is the shortname for the NOAA-20 VIIRS Near Real-time incarnation of the Cloud Mask continuity product derived from the MODIS-VIIRS cloud mask (MVCM) algorithm, which itself is based on the MODIS (MOD35) algorithm. MVCM describes a continuity algorithm that is central to both MODIS data (from Terra and Aqua missions) and VIIRS data (from SNPP and Joint Polar Satellite System missions). Please bear in mind that the term MVCM does not appear as an attribute within the product’s metadata. Implemented to consistently handle MODIS and VIIRS inputs, the NOAA-20 VIIRS collection-1 products use calibration-adjusted NASA VIIRS L1B as inputs. The nominal spatial resolution of the NOAA-20 VIIRS L2 Cloud mask is 750 meters.",
+        "MetadataDates": [
+          {
+            "Date": "2021-02-09T16:08:00.000Z",
+            "Type": "CREATE"
+          },
+          {
+            "Date": "2021-02-09T20:48:00.000Z",
+            "Type": "UPDATE"
+          }
+        ],
+        "VersionDescription": "Collection 1",
+        "Version": "1",
+        "UseConstraints": {
+          "LicenseURL": {
+            "Description": "License URL for data use policy",
+            "Linkage": "https://earthdata.nasa.gov/earth-observation-data/data-use-policy",
+            "MimeType": "text/html",
+            "Name": "Data Use Policy"
+          }
+        },
+        "CollectionDataType": "NEAR_REAL_TIME",
+        "DataCenters": [
+          {
+            "ContactGroups": [
+              {
+                "ContactInformation": {
+                  "ContactMechanisms": [
+                    {
+                      "Type": "Email",
+                      "Value": "sips.support@ssec.wisc.edu"
+                    }
+                  ],
+                  "RelatedUrls": [
+                    {
+                      "Type": "HOME PAGE",
+                      "URL": "https://sips.ssec.wisc.edu/",
+                      "URLContentType": "DataContactURL"
+                    }
+                  ]
+                },
+                "GroupName": "Atmosphere SIPS User Support",
+                "Roles": [
+                  "Data Center Contact",
+                  "User Services"
+                ]
+              }
+            ],
+            "ContactInformation": {
+              "ContactMechanisms": [
+                {
+                  "Type": "Email",
+                  "Value": "sips.support@ssec.wisc.edu"
+                }
+              ],
+              "RelatedUrls": [
+                {
+                  "Type": "HOME PAGE",
+                  "URL": "https://sips.ssec.wisc.edu/",
+                  "URLContentType": "DataCenterURL"
+                }
+              ]
+            },
+            "LongName": "Atmosphere Science Investigator-led Processing System, Space Science and Engineering Center, University of Wisconsin-Madison",
+            "Roles": [
+              "ARCHIVER",
+              "DISTRIBUTOR",
+              "ORIGINATOR",
+              "PROCESSOR"
+            ],
+            "ShortName": "UWI-MAD/SSEC/ASIPS"
+          }
+        ],
+        "Platforms": [
+          {
+            "Instruments": [
+              {
+                "LongName": "Visible-Infrared Imager-Radiometer Suite",
+                "ShortName": "VIIRS"
+              }
+            ],
+            "LongName": "Joint Polar Satellite System - 1",
+            "ShortName": "NOAA-20",
+            "Type": "Earth Observation Satellites"
+          }
+        ]
+      }
+    }
+  ]
+}
