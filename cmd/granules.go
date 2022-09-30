@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
 	"html/template"
 	"os"
@@ -16,6 +17,13 @@ var (
 	granuleTimerange = TimerangeVal{}
 	sinceTime        *TimeVal
 )
+
+type simpleGranule struct {
+	Name        string    `json:"filename"`
+	RevisionID  int       `json:"revision_id"`
+	RevsionDate time.Time `json:"revsion_date"`
+	URL         string    `json:"url"`
+}
 
 var Granules = &cobra.Command{
 	Use:   "granules {-c ID|-p PRODUCT}",
@@ -52,7 +60,15 @@ var Granules = &cobra.Command{
 			log.SetLevel(log.DebugLevel)
 		}
 
-		if err := do(id, productParts, (*time.Time)(sinceTime), header); err != nil {
+		output, err := flags.GetString("output")
+		if err != nil {
+			panic(err)
+		}
+		if output != "json" && output != "simple" {
+			log.Fatal("invalid output type")
+		}
+
+		if err := do(id, productParts, (*time.Time)(sinceTime), header, output); err != nil {
 			fmt.Printf("failed! %s\n", err)
 			os.Exit(1)
 		}
@@ -67,6 +83,7 @@ func init() {
 	flags.StringP("concept-id", "c", "", "Concept ID of the collection the granule belongs to.")
 	flags.StringP("product", "p", "",
 		"<short_name>/<version> used to lookup the collection concept id at runtime")
+	flags.StringP("output", "o", "simple", "Output type. Valid values include json, simple")
 
 	flags.Var(
 		sinceTime,
@@ -83,17 +100,17 @@ func init() {
 }
 
 var granuleListTmpl = `{{ if .Header -}}
-Name                                                        Revision RevisionDate           URL
+Name                                                         Revision RevisionDate           URL
 =============================================================================================================-->
 {{- end }}
 {{ range .Data -}}
-{{ printf "%-60s" .Name }}{{ .Meta.RevisionID | printf "%-9v" }}{{ .Meta.RevisionDate.Format "2006-01-02T15:04:05Z" | printf "%-24s" }}{{ .DownloadURL }}
+{{ printf "%-60s" .Name }} {{ .Meta.RevisionID | printf "%-9v" }}{{ .Meta.RevisionDate.Format "2006-01-02T15:04:05Z" | printf "%-24s" }}{{ .DownloadURL }}
 {{ end -}}
 ==============
 Total: {{ len .Data }}
 `
 
-func do(id string, productParts []string, since *time.Time, header bool) error {
+func do(id string, productParts []string, since *time.Time, header bool, output string) error {
 	api := internal.NewCMRAPI()
 
 	// Determine the concept id from the parts if provided
@@ -109,12 +126,30 @@ func do(id string, productParts []string, since *time.Time, header bool) error {
 	if err != nil {
 		log.WithError(err).Fatal("failed to fetch granules")
 	}
-	t := template.Must(template.New("").Parse(granuleListTmpl))
-	if err := t.Execute(os.Stdout, struct {
-		Data   []internal.Granule
-		Header bool
-	}{granules, header}); err != nil {
-		log.WithError(err).Fatalf("failed to render")
+
+	if output == "json" {
+		outGrans := []simpleGranule{}
+		for _, g := range granules {
+			outGrans = append(outGrans, simpleGranule{
+				Name:        g.Name(),
+				RevisionID:  g.Meta.RevisionID,
+				RevsionDate: g.Meta.RevisionDate,
+				URL:         g.DownloadURL(),
+			})
+		}
+		enc := json.NewEncoder(os.Stdout)
+		enc.SetIndent("", " ")
+		if err := enc.Encode(outGrans); err != nil {
+			log.WithError(err).Fatalf("failed to encode data")
+		}
+	} else {
+		t := template.Must(template.New("").Parse(granuleListTmpl))
+		if err := t.Execute(os.Stdout, struct {
+			Data   []internal.Granule
+			Header bool
+		}{granules, header}); err != nil {
+			log.WithError(err).Fatalf("failed to render")
+		}
 	}
 
 	return nil

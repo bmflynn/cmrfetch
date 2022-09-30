@@ -68,7 +68,7 @@ Project: https://github.com/bmflynn/cmrfetch
 	RunE: func(cmd *cobra.Command, args []string) error {
 		opts, err := newIngestOpts(cmd.Flags())
 		if err != nil {
-			return err
+			return fmt.Errorf("%s, see --help", err)
 		}
 		if opts.Verbose {
 			log.SetLevel(log.DebugLevel)
@@ -165,6 +165,10 @@ func newIngestOpts(flags *pflag.FlagSet) (ingestOpts, error) {
 
 	if opts.Product != nil && opts.CollectionID != "" {
 		return opts, fmt.Errorf("cannot provide both --concept-id and --product")
+	}
+
+	if opts.Product == nil && opts.CollectionID == "" {
+		return opts, fmt.Errorf("one of --concept-id or --product is required")
 	}
 
 	opts.NumWorkers, err = flags.GetInt("workers")
