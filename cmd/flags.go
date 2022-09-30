@@ -6,7 +6,9 @@ import (
 	"time"
 )
 
-type TimeVal time.Time
+type TimeVal struct {
+	time.Time
+}
 
 func (t *TimeVal) String() string { return "" }
 func (t *TimeVal) Type() string   { return "timestamp" }
@@ -15,7 +17,7 @@ func (t *TimeVal) Set(s string) error {
 	if err != nil {
 		return fmt.Errorf("invalid timestamp")
 	}
-	*t = TimeVal(x)
+	t.Time = x
 	return nil
 }
 

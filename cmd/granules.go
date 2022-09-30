@@ -15,7 +15,7 @@ import (
 
 var (
 	granuleTimerange = TimerangeVal{}
-	sinceTime        *TimeVal
+	sinceTime        = TimeVal{}
 )
 
 type simpleGranule struct {
@@ -68,7 +68,7 @@ var Granules = &cobra.Command{
 			log.Fatal("invalid output type")
 		}
 
-		if err := do(id, productParts, (*time.Time)(sinceTime), header, output); err != nil {
+		if err := do(id, productParts, sinceTime.Time, header, output); err != nil {
 			fmt.Printf("failed! %s\n", err)
 			os.Exit(1)
 		}
@@ -86,7 +86,7 @@ func init() {
 	flags.StringP("output", "o", "simple", "Output type. Valid values include json, simple")
 
 	flags.Var(
-		sinceTime,
+		&sinceTime,
 		"since",
 		"only granules updated since this tims as  <yyyy-mm-dd>T<hh:mm:ss>Z. "+
 			"See https://cmr.earthdata.nasa.gov/search/site/docs/search/api.html#g-updated-since",
@@ -110,7 +110,7 @@ Name                                                         Revision RevisionDa
 Total: {{ len .Data }}
 `
 
-func do(id string, productParts []string, since *time.Time, header bool, output string) error {
+func do(id string, productParts []string, since time.Time, header bool, output string) error {
 	api := internal.NewCMRAPI()
 
 	// Determine the concept id from the parts if provided
@@ -122,7 +122,7 @@ func do(id string, productParts []string, since *time.Time, header bool, output 
 		id = col.Meta.ConceptID
 	}
 
-	granules, err := api.Granules(id, granuleTimerange, since)
+	granules, err := api.Granules(id, granuleTimerange, &since)
 	if err != nil {
 		log.WithError(err).Fatal("failed to fetch granules")
 	}

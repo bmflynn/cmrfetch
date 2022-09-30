@@ -27,7 +27,7 @@ import (
 )
 
 var (
-	ingestSinceVal    *TimeVal
+	ingestSinceVal    = TimeVal{Time: time.Time{}}
 	ingestTemporalVal TimerangeVal
 )
 
@@ -97,7 +97,7 @@ func init() {
 	flags.StringP("product", "p", "",
 		"<short_name>/<version> used to lookup the collection concept id at runtime")
 	flags.VarP(
-		ingestSinceVal,
+		&ingestSinceVal,
 		"since", "s",
 		"Ingest files since this time as <yyyy-mm-dd>T<hh:mm:ss>Z",
 	)
@@ -121,7 +121,7 @@ type ingestOpts struct {
 	Product        []string
 	CollectionID   string
 	Temporal       []time.Time
-	Since          *time.Time
+	Since          time.Time
 	CredentialFunc credentialFunc
 	NumWorkers     int
 	Clobber        bool
@@ -177,7 +177,7 @@ func newIngestOpts(flags *pflag.FlagSet) (ingestOpts, error) {
 		return opts, fmt.Errorf("workers must be 1 to 5")
 	}
 
-	opts.Since = (*time.Time)(ingestSinceVal)
+	opts.Since = ingestSinceVal.Time
 	opts.Temporal = ([]time.Time)(ingestTemporalVal)
 
 	if f := flags.Lookup("netrc"); f != nil && f.Changed {
@@ -294,7 +294,7 @@ func worker(
 }
 
 func doIngest(ctx context.Context, opts ingestOpts) error {
-	if opts.Since != nil {
+	if !opts.Since.IsZero() {
 		log.Infof("querying for granules since %s", opts.Since)
 	}
 	api := internal.NewCMRAPI()
@@ -307,7 +307,7 @@ func doIngest(ctx context.Context, opts ingestOpts) error {
 		log.Debugf("found collection %s for %v", opts.CollectionID, opts.Product)
 	}
 
-	granules, err := api.Granules(opts.CollectionID, opts.Temporal, opts.Since)
+	granules, err := api.Granules(opts.CollectionID, opts.Temporal, &opts.Since)
 	if err != nil {
 		return fmt.Errorf("querying granules: %w", err)
 	}
