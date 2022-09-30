@@ -45,7 +45,7 @@ This can be accomplished with `cmrfetch` using cron with dynamically generated
 timerange over the last 72h.
 
 Using a concept ID in a cronjob script something like:
-```
+```sh
 #!/bin/bash
 export EARTHDATA_USER=<username>
 export EARTHDATA_PASSWD=<password>
@@ -54,8 +54,8 @@ export CONCEPT_ID=C1607549631-ASIPS
 lastlog=/tmp/$(basename $0).log
 lock=/tmp/$(basename $0).lock
 statedir=$HOME/ingest
-start=$(date -d "72h ago" +%Y-%m-%dT%H:%M:%SZ)
-end=$(date -d "72h ago" +%Y-%m-%dT%H:%M:%SZ)
+start=$(date -u -d "-72 hours" +%Y-%m-%dT%H:%M:%SZ)
+end=$(date -u +%Y-%m-%dT%H:%M:%SZ)
 
 # Use flock to prevent simultaneous instances; see flock manpage
 (
