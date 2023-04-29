@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"regexp"
 	"strings"
 
 	"github.com/bmflynn/cmrfetch/internal"
@@ -14,11 +15,11 @@ import (
 
 var (
 	timerange     internal.TimeRangeValue
-	defaultFields = []string{"name", "size", "checksum", "download_url"}
 	validFields   = []string{
 		"name", "size", "checksum", "checksum_alg", "download_url", "native_id", "revision_id",
-		"concept_id", "collection", "download_direct_url",
+		"concept_id", "collection", "download_direct_url", "daynight", "timerange", "boundingbox",
 	}
+	defaultFields = validFields
 )
 
 func failOnError(err error) {
@@ -104,8 +105,8 @@ NASA Earthdata Authentication
 
 		var writer outputWriter
 		switch output {
-    case "tables": 
-      writer = tablesWriter
+		case "tables":
+			writer = tablesWriter
 		case "json":
 			writer = jsonWriter
 		case "csv":
@@ -148,15 +149,12 @@ func init() {
 	flags.StringSliceP("nativeid", "N", nil, "granule native id")
 	flags.StringSliceP("collection", "c", nil, "Collection concept id")
 	flags.StringSliceP("shortname", "n", nil, "Collection short name")
+	flags.StringP("daynight", "D", "", "Day or night grnaules. One of day, night, both, or unspecified")
 	flags.VarP(&timerange, "timerange", "t", "Timerange as <start>,[<end>]")
-	// FIXME: Have to sort by revision_date to make sure we don'get get errors regaring concept-id and revision
-	//        This seems to be a CMR issue, but I'm not really sure.
-	// flags.StringP("sortby", "S", "",
-	// 	fmt.Sprintf("Sort by one of %s. Prefix the field name by `-` to sort descending", strings.Join(sortByFields, ", ")))
 	flags.Float64Slice("polygon", nil,
 		"Polygon points are provided in counter-clockwise order. The last point should match the first point to "+
 			"close the polygon. The values are listed comma separated in longitude latitude order, "+
-			"i.e. lon1, lat1, lon2, lat2, lon3, lat3, and so on.")
+			"i.e. lon1,lat1,lon2,lat2,lon3,lat3, and so on.")
 	flags.Float64Slice("bouding-box", nil, "Granules overlapping a bounding box, where the corner "+
 		"points are provided lon1,lat1,lon2,lat2.")
 	flags.Float64Slice("circle", nil, "Granules overlapping a circle, where the circle is defined as "+
@@ -180,17 +178,26 @@ func do(api *internal.CMRSearchAPI, params internal.SearchGranuleParams, writer 
 func newParams(flags *pflag.FlagSet) (internal.SearchGranuleParams, error) {
 	params := internal.SearchGranuleParams{}
 
-	s, err := flags.GetStringSlice("collection")
-	failOnError(err)
-	params.Collection(s...)
+	if flags.Changed("daynight") {
+		st, err := flags.GetString("daynight")
+		failOnError(err)
+		if ok, _ := regexp.MatchString(`^(day|night|both|unspecified)$`, st); !ok {
+			return params, fmt.Errorf("daynight must be one of day, night, both, or unspecified")
+		}
+		params.DayNightFlag(st)
+	}
 
-	s, err = flags.GetStringSlice("nativeid")
+	sa, err := flags.GetStringSlice("collection")
 	failOnError(err)
-	params.NativeID(s...)
+	params.Collection(sa...)
 
-	s, err = flags.GetStringSlice("shortname")
+	sa, err = flags.GetStringSlice("nativeid")
 	failOnError(err)
-	params.ShortName(s...)
+	params.NativeID(sa...)
+
+	sa, err = flags.GetStringSlice("shortname")
+	failOnError(err)
+	params.ShortName(sa...)
 
 	if flags.Changed("timerange") {
 		failOnError(err)

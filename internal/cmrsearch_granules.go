@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/url"
+	"path"
 	"regexp"
 	"strings"
 	"time"
@@ -21,6 +22,7 @@ func joinFloats(vals []float64) string {
 
 // SearchGranuleParams is a builder for collection search query params
 type SearchGranuleParams struct {
+	daynight      string
 	shortnames    []string
 	collectionIDs []string
 	nativeIDs     []string
@@ -35,6 +37,11 @@ type SearchGranuleParams struct {
 
 func NewSearchGranuleParams() SearchGranuleParams {
 	return SearchGranuleParams{}
+}
+
+func (p *SearchGranuleParams) DayNightFlag(name string) *SearchGranuleParams {
+	p.daynight = name
+	return p
 }
 
 func (p *SearchGranuleParams) ShortName(name ...string) *SearchGranuleParams {
@@ -116,6 +123,9 @@ func (p *SearchGranuleParams) build() (url.Values, error) {
 		}
 		query.Set("circle", joinFloats(p.circle))
 	}
+	if p.daynight != "" {
+		query.Set("day_night_flag", p.daynight)
+	}
 	if len(p.boundingBox) != 0 {
 		if len(p.boundingBox) != 4 {
 			return query, fmt.Errorf("wrong number of values for bounding box")
@@ -133,16 +143,19 @@ func (p *SearchGranuleParams) build() (url.Values, error) {
 }
 
 type Granule struct {
-	Name         string `json:"name"`
-	Size         string `json:"size"`
-	Checksum     string `json:"checksum"`
-	ChecksumAlg  string `json:"checksum_alg"`
-	GetDataURL   string `json:"download_url"`
-	GetDataDAURL string `json:"download_direct_url"`
-	NativeID     string `json:"native_id"`
-	RevisionID   string `json:"revision_id"`
-	ConceptID    string `json:"concept_id"`
-	Collection   string `json:"collection"`
+	Name         string   `json:"name"`
+	Size         string   `json:"size"`
+	Checksum     string   `json:"checksum"`
+	ChecksumAlg  string   `json:"checksum_alg"`
+	GetDataURL   string   `json:"download_url"`
+	GetDataDAURL string   `json:"download_direct_url"`
+	NativeID     string   `json:"native_id"`
+	RevisionID   string   `json:"revision_id"`
+	ConceptID    string   `json:"concept_id"`
+	Collection   string   `json:"collection"`
+	DayNightFlag string   `json:"daynight"`
+	TimeRange    []string `json:"timerange"`
+	BoundingBox  []string `json:"boundingbox"`
 }
 
 var dataFileRx = regexp.MustCompile(`\.(nc|hdf|h5|dat)`)
@@ -150,7 +163,7 @@ var dataFileRx = regexp.MustCompile(`\.(nc|hdf|h5|dat)`)
 func findDownloadURLs(zult gjson.Result, directAccess bool) []string {
 	typeKey := "GET DATA"
 	if directAccess {
-		typeKey = "GET DATA DIRECT ACCESS"
+		typeKey = "GET DATA VIA DIRECT ACCESS"
 	}
 	urls := []string{}
 	for _, dat := range zult.Get("umm.RelatedUrls").Array() {
@@ -178,8 +191,9 @@ func newGranuleFromUMM(zult gjson.Result) Granule {
 		)
 	}
 
+  // Not sure in which case where would be multiple infos, but it is an array so we
+  // just separate all values by new lines.
 	for _, ar := range zult.Get("umm.DataGranule.ArchiveAndDistributionInformation").Array() {
-		gran.Name += fmt.Sprintf("%s\n", ar.Get("Name").String())
 		size := ar.Get("SizeInBytes").Int()
 		if size != 0 {
 			gran.Size += fmt.Sprintf("%s\n", ByteCountSI(ar.Get("SizeInBytes").Int()))
@@ -187,13 +201,42 @@ func newGranuleFromUMM(zult gjson.Result) Granule {
 		gran.Checksum += fmt.Sprintf("%s\n", ar.Get("Checksum.Value").String())
 		gran.ChecksumAlg += fmt.Sprintf("%s\n", ar.Get("Checksum.Algorithm").String())
 	}
-	gran.Name = strings.TrimSpace(gran.Name)
 	gran.Size = strings.TrimSpace(gran.Size)
 	gran.Checksum = strings.TrimSpace(gran.Checksum)
 	gran.ChecksumAlg = strings.TrimSpace(gran.ChecksumAlg)
 
 	gran.GetDataURL = strings.Join(findDownloadURLs(zult, false), "\n")
+	if gran.GetDataURL != "" {
+		gran.Name = path.Base(gran.GetDataURL)
+	}
 	gran.GetDataDAURL = strings.Join(findDownloadURLs(zult, true), "\n")
+
+	gran.DayNightFlag = zult.Get("umm.DataGranule.DayNightFlag").String()
+	gran.TimeRange = []string{
+		zult.Get("umm.TemporalExtent.RangeDateTime.BeginningDateTime").String(),
+		zult.Get("umm.TemporalExtent.RangeDateTime.EndingDateTime").String(),
+	}
+  /*
+        "SpatialExtent": {
+          "HorizontalSpatialDomain": {
+            "Geometry": {
+              "GPolygons": [
+                {
+                  "Boundary": {
+                    "Points": [
+                      {
+                        "Longitude": 35.479717,
+          */
+	gran.BoundingBox = []string{}
+	for _, polygon := range zult.Get("umm.SpatialExtent.HorizontalSpatialDomain.Geometry.GPolygons").Array() {
+		points := []string{}
+		for _, point := range polygon.Get("Boundary.Points").Array() {
+			points = append(points, fmt.Sprintf("%v", point.Get("Longitude").Float()))
+			points = append(points, fmt.Sprintf("%v", point.Get("Latitude").Float()))
+		}
+		gran.BoundingBox = append(gran.BoundingBox, strings.Join(points, ","))
+	}
+
 	return gran
 }
 
