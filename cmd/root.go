@@ -37,6 +37,9 @@ References:
 Project: https://github.com/bmflynn/cmrfetch
 `,
 	Version:      internal.Version,
+  CompletionOptions: cobra.CompletionOptions{
+    HiddenDefaultCmd: true,
+  },
 }
 
 func init() {
