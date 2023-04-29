@@ -1,0 +1,1066 @@
+{
+  "hits": 1880,
+  "took": 142,
+  "items": [
+    {
+      "meta": {
+        "concept-type": "granule",
+        "concept-id": "G2669133699-ASIPS",
+        "revision-id": 1,
+        "native-id": "ASIPS:AERDT_L2_VIIRS_SNPP_NRT:1682614440",
+        "provider-id": "ASIPS",
+        "format": "application/vnd.nasa.cmr.umm+json",
+        "revision-date": "2023-04-27T19:29:07.960Z"
+      },
+      "umm": {
+        "GranuleUR": "ASIPS:AERDT_L2_VIIRS_SNPP_NRT:1682614440",
+        "ProviderDates": [
+          {
+            "Date": "2023-04-27T19:29:07.806163Z",
+            "Type": "Insert"
+          },
+          {
+            "Date": "2023-04-27T19:29:07.806163Z",
+            "Type": "Update"
+          },
+          {
+            "Date": "2023-05-11T19:29:07.806163Z",
+            "Type": "Delete"
+          }
+        ],
+        "CollectionReference": {
+          "ShortName": "AERDT_L2_VIIRS_SNPP_NRT",
+          "Version": "1.1"
+        },
+        "DataGranule": {
+          "Identifiers": [
+            {
+              "Identifier": "AERDT_L2_VIIRS_SNPP.A2023117.1654.011.nrt.nc",
+              "IdentifierType": "ProducerGranuleId"
+            }
+          ],
+          "ProductionDateTime": "2023-04-27T19:29:03.445918Z",
+          "DayNightFlag": "Day",
+          "ArchiveAndDistributionInformation": [
+            {
+              "Name": "AERDT_L2_VIIRS_SNPP.A2023117.1654.011.nrt.nc",
+              "Checksum": {
+                "Value": "3967c4c9d5768e4eff7e1b508b9011f2",
+                "Algorithm": "MD5"
+              },
+              "Format": "netCDF-4",
+              "MimeType": "application/x-netcdf",
+              "SizeInBytes": 7008073
+            }
+          ]
+        },
+        "TemporalExtent": {
+          "RangeDateTime": {
+            "BeginningDateTime": "2023-04-27T16:54:00.000000Z",
+            "EndingDateTime": "2023-04-27T16:59:59.000000Z"
+          }
+        },
+        "SpatialExtent": {
+          "HorizontalSpatialDomain": {
+            "Geometry": {
+              "GPolygons": [
+                {
+                  "Boundary": {
+                    "Points": [
+                      {
+                        "Longitude": -131.310653687,
+                        "Latitude": 66.963340759
+                      },
+                      {
+                        "Longitude": -92.430793762,
+                        "Latitude": 55.710681915
+                      },
+                      {
+                        "Longitude": -37.703670502,
+                        "Latitude": 63.907997131
+                      },
+                      {
+                        "Longitude": -4.32655859,
+                        "Latitude": 82.950004578
+                      },
+                      {
+                        "Longitude": -131.310653687,
+                        "Latitude": 66.963340759
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        },
+        "RelatedUrls": [
+          {
+            "URL": "https://sips-data.ssec.wisc.edu/nrt/47503027/AERDT_L2_VIIRS_SNPP.A2023117.1654.011.nrt.nc",
+            "Type": "GET DATA",
+            "MimeType": "application/x-netcdf"
+          }
+        ],
+        "MetadataSpecification": {
+          "URL": "https://cdn.earthdata.nasa.gov/umm/granule/v1.6.4",
+          "Name": "UMM-G",
+          "Version": "1.6.4"
+        }
+      }
+    },
+    {
+      "meta": {
+        "concept-type": "granule",
+        "concept-id": "G2669133357-ASIPS",
+        "revision-id": 1,
+        "native-id": "ASIPS:AERDT_L2_VIIRS_SNPP_NRT:1682618040",
+        "provider-id": "ASIPS",
+        "format": "application/vnd.nasa.cmr.umm+json",
+        "revision-date": "2023-04-27T19:28:47.299Z"
+      },
+      "umm": {
+        "GranuleUR": "ASIPS:AERDT_L2_VIIRS_SNPP_NRT:1682618040",
+        "ProviderDates": [
+          {
+            "Date": "2023-04-27T19:28:47.105189Z",
+            "Type": "Insert"
+          },
+          {
+            "Date": "2023-04-27T19:28:47.105189Z",
+            "Type": "Update"
+          },
+          {
+            "Date": "2023-05-11T19:28:47.105189Z",
+            "Type": "Delete"
+          }
+        ],
+        "CollectionReference": {
+          "ShortName": "AERDT_L2_VIIRS_SNPP_NRT",
+          "Version": "1.1"
+        },
+        "DataGranule": {
+          "Identifiers": [
+            {
+              "Identifier": "AERDT_L2_VIIRS_SNPP.A2023117.1754.011.nrt.nc",
+              "IdentifierType": "ProducerGranuleId"
+            }
+          ],
+          "ProductionDateTime": "2023-04-27T19:28:37.164151Z",
+          "DayNightFlag": "Both",
+          "ArchiveAndDistributionInformation": [
+            {
+              "Name": "AERDT_L2_VIIRS_SNPP.A2023117.1754.011.nrt.nc",
+              "Checksum": {
+                "Value": "5d2f8474b689fb892a1a6a234ee6580b",
+                "Algorithm": "MD5"
+              },
+              "Format": "netCDF-4",
+              "MimeType": "application/x-netcdf",
+              "SizeInBytes": 7323163
+            }
+          ]
+        },
+        "TemporalExtent": {
+          "RangeDateTime": {
+            "BeginningDateTime": "2023-04-27T17:54:00.000000Z",
+            "EndingDateTime": "2023-04-27T17:59:59.000000Z"
+          }
+        },
+        "SpatialExtent": {
+          "HorizontalSpatialDomain": {
+            "Geometry": {
+              "GPolygons": [
+                {
+                  "Boundary": {
+                    "Points": [
+                      {
+                        "Longitude": -82.152328491,
+                        "Latitude": -62.19493866
+                      },
+                      {
+                        "Longitude": -107.918212891,
+                        "Latitude": -81.471328735
+                      },
+                      {
+                        "Longitude": 7.480416298,
+                        "Latitude": -66.130393982
+                      },
+                      {
+                        "Longitude": -28.687917709,
+                        "Latitude": -54.16752243
+                      },
+                      {
+                        "Longitude": -82.152328491,
+                        "Latitude": -62.19493866
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        },
+        "RelatedUrls": [
+          {
+            "URL": "https://sips-data.ssec.wisc.edu/nrt/47503019/AERDT_L2_VIIRS_SNPP.A2023117.1754.011.nrt.nc",
+            "Type": "GET DATA",
+            "MimeType": "application/x-netcdf"
+          }
+        ],
+        "MetadataSpecification": {
+          "URL": "https://cdn.earthdata.nasa.gov/umm/granule/v1.6.4",
+          "Name": "UMM-G",
+          "Version": "1.6.4"
+        }
+      }
+    },
+    {
+      "meta": {
+        "concept-type": "granule",
+        "concept-id": "G2669132466-ASIPS",
+        "revision-id": 1,
+        "native-id": "ASIPS:AERDT_L2_VIIRS_SNPP_NRT:1682619480",
+        "provider-id": "ASIPS",
+        "format": "application/vnd.nasa.cmr.umm+json",
+        "revision-date": "2023-04-27T19:28:05.796Z"
+      },
+      "umm": {
+        "GranuleUR": "ASIPS:AERDT_L2_VIIRS_SNPP_NRT:1682619480",
+        "ProviderDates": [
+          {
+            "Date": "2023-04-27T19:28:05.609370Z",
+            "Type": "Insert"
+          },
+          {
+            "Date": "2023-04-27T19:28:05.609370Z",
+            "Type": "Update"
+          },
+          {
+            "Date": "2023-05-11T19:28:05.609370Z",
+            "Type": "Delete"
+          }
+        ],
+        "CollectionReference": {
+          "ShortName": "AERDT_L2_VIIRS_SNPP_NRT",
+          "Version": "1.1"
+        },
+        "DataGranule": {
+          "Identifiers": [
+            {
+              "Identifier": "AERDT_L2_VIIRS_SNPP.A2023117.1818.011.nrt.nc",
+              "IdentifierType": "ProducerGranuleId"
+            }
+          ],
+          "ProductionDateTime": "2023-04-27T19:27:58.504117Z",
+          "DayNightFlag": "Day",
+          "ArchiveAndDistributionInformation": [
+            {
+              "Name": "AERDT_L2_VIIRS_SNPP.A2023117.1818.011.nrt.nc",
+              "Checksum": {
+                "Value": "b983810c8fcb344f2434b57f2147d5b3",
+                "Algorithm": "MD5"
+              },
+              "Format": "netCDF-4",
+              "MimeType": "application/x-netcdf",
+              "SizeInBytes": 11815596
+            }
+          ]
+        },
+        "TemporalExtent": {
+          "RangeDateTime": {
+            "BeginningDateTime": "2023-04-27T18:18:00.000000Z",
+            "EndingDateTime": "2023-04-27T18:23:59.000000Z"
+          }
+        },
+        "SpatialExtent": {
+          "HorizontalSpatialDomain": {
+            "Geometry": {
+              "GPolygons": [
+                {
+                  "Boundary": {
+                    "Points": [
+                      {
+                        "Longitude": -92.259979248,
+                        "Latitude": 20.039237976
+                      },
+                      {
+                        "Longitude": -86.467025757,
+                        "Latitude": -0.50530529
+                      },
+                      {
+                        "Longitude": -59.236217499,
+                        "Latitude": 3.599428177
+                      },
+                      {
+                        "Longitude": -62.882061005,
+                        "Latitude": 24.463235855
+                      },
+                      {
+                        "Longitude": -92.259979248,
+                        "Latitude": 20.039237976
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        },
+        "RelatedUrls": [
+          {
+            "URL": "https://sips-data.ssec.wisc.edu/nrt/47503017/AERDT_L2_VIIRS_SNPP.A2023117.1818.011.nrt.nc",
+            "Type": "GET DATA",
+            "MimeType": "application/x-netcdf"
+          }
+        ],
+        "MetadataSpecification": {
+          "URL": "https://cdn.earthdata.nasa.gov/umm/granule/v1.6.4",
+          "Name": "UMM-G",
+          "Version": "1.6.4"
+        }
+      }
+    },
+    {
+      "meta": {
+        "concept-type": "granule",
+        "concept-id": "G2669132464-ASIPS",
+        "revision-id": 1,
+        "native-id": "ASIPS:AERDT_L2_VIIRS_SNPP_NRT:1682619120",
+        "provider-id": "ASIPS",
+        "format": "application/vnd.nasa.cmr.umm+json",
+        "revision-date": "2023-04-27T19:28:05.487Z"
+      },
+      "umm": {
+        "GranuleUR": "ASIPS:AERDT_L2_VIIRS_SNPP_NRT:1682619120",
+        "ProviderDates": [
+          {
+            "Date": "2023-04-27T19:28:05.336456Z",
+            "Type": "Insert"
+          },
+          {
+            "Date": "2023-04-27T19:28:05.336456Z",
+            "Type": "Update"
+          },
+          {
+            "Date": "2023-05-11T19:28:05.336456Z",
+            "Type": "Delete"
+          }
+        ],
+        "CollectionReference": {
+          "ShortName": "AERDT_L2_VIIRS_SNPP_NRT",
+          "Version": "1.1"
+        },
+        "DataGranule": {
+          "Identifiers": [
+            {
+              "Identifier": "AERDT_L2_VIIRS_SNPP.A2023117.1812.011.nrt.nc",
+              "IdentifierType": "ProducerGranuleId"
+            }
+          ],
+          "ProductionDateTime": "2023-04-27T19:27:58.473910Z",
+          "DayNightFlag": "Day",
+          "ArchiveAndDistributionInformation": [
+            {
+              "Name": "AERDT_L2_VIIRS_SNPP.A2023117.1812.011.nrt.nc",
+              "Checksum": {
+                "Value": "dd4ab20f25a7b2a949c7429f73e58280",
+                "Algorithm": "MD5"
+              },
+              "Format": "netCDF-4",
+              "MimeType": "application/x-netcdf",
+              "SizeInBytes": 10613855
+            }
+          ]
+        },
+        "TemporalExtent": {
+          "RangeDateTime": {
+            "BeginningDateTime": "2023-04-27T18:12:00.000000Z",
+            "EndingDateTime": "2023-04-27T18:17:59.000000Z"
+          }
+        },
+        "SpatialExtent": {
+          "HorizontalSpatialDomain": {
+            "Geometry": {
+              "GPolygons": [
+                {
+                  "Boundary": {
+                    "Points": [
+                      {
+                        "Longitude": -86.475219727,
+                        "Latitude": -0.387649089
+                      },
+                      {
+                        "Longitude": -82.723777771,
+                        "Latitude": -21.119758606
+                      },
+                      {
+                        "Longitude": -53.744918823,
+                        "Latitude": -16.753398895
+                      },
+                      {
+                        "Longitude": -59.240600586,
+                        "Latitude": 3.71779871
+                      },
+                      {
+                        "Longitude": -86.475219727,
+                        "Latitude": -0.387649089
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        },
+        "RelatedUrls": [
+          {
+            "URL": "https://sips-data.ssec.wisc.edu/nrt/47503012/AERDT_L2_VIIRS_SNPP.A2023117.1812.011.nrt.nc",
+            "Type": "GET DATA",
+            "MimeType": "application/x-netcdf"
+          }
+        ],
+        "MetadataSpecification": {
+          "URL": "https://cdn.earthdata.nasa.gov/umm/granule/v1.6.4",
+          "Name": "UMM-G",
+          "Version": "1.6.4"
+        }
+      }
+    },
+    {
+      "meta": {
+        "concept-type": "granule",
+        "concept-id": "G2669132461-ASIPS",
+        "revision-id": 1,
+        "native-id": "ASIPS:AERDT_L2_VIIRS_SNPP_NRT:1682618760",
+        "provider-id": "ASIPS",
+        "format": "application/vnd.nasa.cmr.umm+json",
+        "revision-date": "2023-04-27T19:28:04.952Z"
+      },
+      "umm": {
+        "GranuleUR": "ASIPS:AERDT_L2_VIIRS_SNPP_NRT:1682618760",
+        "ProviderDates": [
+          {
+            "Date": "2023-04-27T19:28:04.803341Z",
+            "Type": "Insert"
+          },
+          {
+            "Date": "2023-04-27T19:28:04.803341Z",
+            "Type": "Update"
+          },
+          {
+            "Date": "2023-05-11T19:28:04.803341Z",
+            "Type": "Delete"
+          }
+        ],
+        "CollectionReference": {
+          "ShortName": "AERDT_L2_VIIRS_SNPP_NRT",
+          "Version": "1.1"
+        },
+        "DataGranule": {
+          "Identifiers": [
+            {
+              "Identifier": "AERDT_L2_VIIRS_SNPP.A2023117.1806.011.nrt.nc",
+              "IdentifierType": "ProducerGranuleId"
+            }
+          ],
+          "ProductionDateTime": "2023-04-27T19:27:58.469774Z",
+          "DayNightFlag": "Day",
+          "ArchiveAndDistributionInformation": [
+            {
+              "Name": "AERDT_L2_VIIRS_SNPP.A2023117.1806.011.nrt.nc",
+              "Checksum": {
+                "Value": "939befbdef29b54ac5044c32453f079b",
+                "Algorithm": "MD5"
+              },
+              "Format": "netCDF-4",
+              "MimeType": "application/x-netcdf",
+              "SizeInBytes": 10065479
+            }
+          ]
+        },
+        "TemporalExtent": {
+          "RangeDateTime": {
+            "BeginningDateTime": "2023-04-27T18:06:00.000000Z",
+            "EndingDateTime": "2023-04-27T18:11:59.000000Z"
+          }
+        },
+        "SpatialExtent": {
+          "HorizontalSpatialDomain": {
+            "Geometry": {
+              "GPolygons": [
+                {
+                  "Boundary": {
+                    "Points": [
+                      {
+                        "Longitude": -82.723442078,
+                        "Latitude": -20.999416351
+                      },
+                      {
+                        "Longitude": -80.734603882,
+                        "Latitude": -41.762016296
+                      },
+                      {
+                        "Longitude": -44.983226776,
+                        "Latitude": -36.375061035
+                      },
+                      {
+                        "Longitude": -53.760551453,
+                        "Latitude": -16.634738922
+                      },
+                      {
+                        "Longitude": -82.723442078,
+                        "Latitude": -20.999416351
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        },
+        "RelatedUrls": [
+          {
+            "URL": "https://sips-data.ssec.wisc.edu/nrt/47503016/AERDT_L2_VIIRS_SNPP.A2023117.1806.011.nrt.nc",
+            "Type": "GET DATA",
+            "MimeType": "application/x-netcdf"
+          }
+        ],
+        "MetadataSpecification": {
+          "URL": "https://cdn.earthdata.nasa.gov/umm/granule/v1.6.4",
+          "Name": "UMM-G",
+          "Version": "1.6.4"
+        }
+      }
+    },
+    {
+      "meta": {
+        "concept-type": "granule",
+        "concept-id": "G2669132458-ASIPS",
+        "revision-id": 1,
+        "native-id": "ASIPS:AERDT_L2_VIIRS_SNPP_NRT:1682619840",
+        "provider-id": "ASIPS",
+        "format": "application/vnd.nasa.cmr.umm+json",
+        "revision-date": "2023-04-27T19:28:04.418Z"
+      },
+      "umm": {
+        "GranuleUR": "ASIPS:AERDT_L2_VIIRS_SNPP_NRT:1682619840",
+        "ProviderDates": [
+          {
+            "Date": "2023-04-27T19:28:04.232267Z",
+            "Type": "Insert"
+          },
+          {
+            "Date": "2023-04-27T19:28:04.232267Z",
+            "Type": "Update"
+          },
+          {
+            "Date": "2023-05-11T19:28:04.232267Z",
+            "Type": "Delete"
+          }
+        ],
+        "CollectionReference": {
+          "ShortName": "AERDT_L2_VIIRS_SNPP_NRT",
+          "Version": "1.1"
+        },
+        "DataGranule": {
+          "Identifiers": [
+            {
+              "Identifier": "AERDT_L2_VIIRS_SNPP.A2023117.1824.011.nrt.nc",
+              "IdentifierType": "ProducerGranuleId"
+            }
+          ],
+          "ProductionDateTime": "2023-04-27T19:27:57.423189Z",
+          "DayNightFlag": "Day",
+          "ArchiveAndDistributionInformation": [
+            {
+              "Name": "AERDT_L2_VIIRS_SNPP.A2023117.1824.011.nrt.nc",
+              "Checksum": {
+                "Value": "29c1b5b9c756414829d13e903046b27a",
+                "Algorithm": "MD5"
+              },
+              "Format": "netCDF-4",
+              "MimeType": "application/x-netcdf",
+              "SizeInBytes": 10892417
+            }
+          ]
+        },
+        "TemporalExtent": {
+          "RangeDateTime": {
+            "BeginningDateTime": "2023-04-27T18:24:00.000000Z",
+            "EndingDateTime": "2023-04-27T18:29:59.000000Z"
+          }
+        },
+        "SpatialExtent": {
+          "HorizontalSpatialDomain": {
+            "Geometry": {
+              "GPolygons": [
+                {
+                  "Boundary": {
+                    "Points": [
+                      {
+                        "Longitude": -101.631881714,
+                        "Latitude": 39.611236572
+                      },
+                      {
+                        "Longitude": -92.238265991,
+                        "Latitude": 19.925195694
+                      },
+                      {
+                        "Longitude": -62.883918762,
+                        "Latitude": 24.34528923
+                      },
+                      {
+                        "Longitude": -64.714385986,
+                        "Latitude": 45.156951904
+                      },
+                      {
+                        "Longitude": -101.631881714,
+                        "Latitude": 39.611236572
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        },
+        "RelatedUrls": [
+          {
+            "URL": "https://sips-data.ssec.wisc.edu/nrt/47503015/AERDT_L2_VIIRS_SNPP.A2023117.1824.011.nrt.nc",
+            "Type": "GET DATA",
+            "MimeType": "application/x-netcdf"
+          }
+        ],
+        "MetadataSpecification": {
+          "URL": "https://cdn.earthdata.nasa.gov/umm/granule/v1.6.4",
+          "Name": "UMM-G",
+          "Version": "1.6.4"
+        }
+      }
+    },
+    {
+      "meta": {
+        "concept-type": "granule",
+        "concept-id": "G2669132456-ASIPS",
+        "revision-id": 1,
+        "native-id": "ASIPS:AERDT_L2_VIIRS_SNPP_NRT:1682618400",
+        "provider-id": "ASIPS",
+        "format": "application/vnd.nasa.cmr.umm+json",
+        "revision-date": "2023-04-27T19:28:04.138Z"
+      },
+      "umm": {
+        "GranuleUR": "ASIPS:AERDT_L2_VIIRS_SNPP_NRT:1682618400",
+        "ProviderDates": [
+          {
+            "Date": "2023-04-27T19:28:03.952868Z",
+            "Type": "Insert"
+          },
+          {
+            "Date": "2023-04-27T19:28:03.952868Z",
+            "Type": "Update"
+          },
+          {
+            "Date": "2023-05-11T19:28:03.952868Z",
+            "Type": "Delete"
+          }
+        ],
+        "CollectionReference": {
+          "ShortName": "AERDT_L2_VIIRS_SNPP_NRT",
+          "Version": "1.1"
+        },
+        "DataGranule": {
+          "Identifiers": [
+            {
+              "Identifier": "AERDT_L2_VIIRS_SNPP.A2023117.1800.011.nrt.nc",
+              "IdentifierType": "ProducerGranuleId"
+            }
+          ],
+          "ProductionDateTime": "2023-04-27T19:27:57.439558Z",
+          "DayNightFlag": "Day",
+          "ArchiveAndDistributionInformation": [
+            {
+              "Name": "AERDT_L2_VIIRS_SNPP.A2023117.1800.011.nrt.nc",
+              "Checksum": {
+                "Value": "9135827757850f735cbbc155a24441f5",
+                "Algorithm": "MD5"
+              },
+              "Format": "netCDF-4",
+              "MimeType": "application/x-netcdf",
+              "SizeInBytes": 9031500
+            }
+          ]
+        },
+        "TemporalExtent": {
+          "RangeDateTime": {
+            "BeginningDateTime": "2023-04-27T18:00:00.000000Z",
+            "EndingDateTime": "2023-04-27T18:05:59.000000Z"
+          }
+        },
+        "SpatialExtent": {
+          "HorizontalSpatialDomain": {
+            "Geometry": {
+              "GPolygons": [
+                {
+                  "Boundary": {
+                    "Points": [
+                      {
+                        "Longitude": -80.722892761,
+                        "Latitude": -41.638435364
+                      },
+                      {
+                        "Longitude": -82.200401306,
+                        "Latitude": -62.318920135
+                      },
+                      {
+                        "Longitude": -28.566993713,
+                        "Latitude": -54.267364502
+                      },
+                      {
+                        "Longitude": -45.027275085,
+                        "Latitude": -36.25932312
+                      },
+                      {
+                        "Longitude": -80.722892761,
+                        "Latitude": -41.638435364
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        },
+        "RelatedUrls": [
+          {
+            "URL": "https://sips-data.ssec.wisc.edu/nrt/47503018/AERDT_L2_VIIRS_SNPP.A2023117.1800.011.nrt.nc",
+            "Type": "GET DATA",
+            "MimeType": "application/x-netcdf"
+          }
+        ],
+        "MetadataSpecification": {
+          "URL": "https://cdn.earthdata.nasa.gov/umm/granule/v1.6.4",
+          "Name": "UMM-G",
+          "Version": "1.6.4"
+        }
+      }
+    },
+    {
+      "meta": {
+        "concept-type": "granule",
+        "concept-id": "G2669132455-ASIPS",
+        "revision-id": 1,
+        "native-id": "ASIPS:AERDT_L2_VIIRS_SNPP_NRT:1682620200",
+        "provider-id": "ASIPS",
+        "format": "application/vnd.nasa.cmr.umm+json",
+        "revision-date": "2023-04-27T19:28:03.857Z"
+      },
+      "umm": {
+        "GranuleUR": "ASIPS:AERDT_L2_VIIRS_SNPP_NRT:1682620200",
+        "ProviderDates": [
+          {
+            "Date": "2023-04-27T19:28:03.604922Z",
+            "Type": "Insert"
+          },
+          {
+            "Date": "2023-04-27T19:28:03.604922Z",
+            "Type": "Update"
+          },
+          {
+            "Date": "2023-05-11T19:28:03.604922Z",
+            "Type": "Delete"
+          }
+        ],
+        "CollectionReference": {
+          "ShortName": "AERDT_L2_VIIRS_SNPP_NRT",
+          "Version": "1.1"
+        },
+        "DataGranule": {
+          "Identifiers": [
+            {
+              "Identifier": "AERDT_L2_VIIRS_SNPP.A2023117.1830.011.nrt.nc",
+              "IdentifierType": "ProducerGranuleId"
+            }
+          ],
+          "ProductionDateTime": "2023-04-27T19:27:57.412933Z",
+          "DayNightFlag": "Day",
+          "ArchiveAndDistributionInformation": [
+            {
+              "Name": "AERDT_L2_VIIRS_SNPP.A2023117.1830.011.nrt.nc",
+              "Checksum": {
+                "Value": "34f9c758e8b34c433c2d6d2faf71f5df",
+                "Algorithm": "MD5"
+              },
+              "Format": "netCDF-4",
+              "MimeType": "application/x-netcdf",
+              "SizeInBytes": 7103587
+            }
+          ]
+        },
+        "TemporalExtent": {
+          "RangeDateTime": {
+            "BeginningDateTime": "2023-04-27T18:30:00.000000Z",
+            "EndingDateTime": "2023-04-27T18:35:59.000000Z"
+          }
+        },
+        "SpatialExtent": {
+          "HorizontalSpatialDomain": {
+            "Geometry": {
+              "GPolygons": [
+                {
+                  "Boundary": {
+                    "Points": [
+                      {
+                        "Longitude": -120.010879517,
+                        "Latitude": 57.076564789
+                      },
+                      {
+                        "Longitude": -101.576835632,
+                        "Latitude": 39.503887177
+                      },
+                      {
+                        "Longitude": -64.721176147,
+                        "Latitude": 45.038402557
+                      },
+                      {
+                        "Longitude": -62.492591858,
+                        "Latitude": 65.672225952
+                      },
+                      {
+                        "Longitude": -120.010879517,
+                        "Latitude": 57.076564789
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        },
+        "RelatedUrls": [
+          {
+            "URL": "https://sips-data.ssec.wisc.edu/nrt/47503014/AERDT_L2_VIIRS_SNPP.A2023117.1830.011.nrt.nc",
+            "Type": "GET DATA",
+            "MimeType": "application/x-netcdf"
+          }
+        ],
+        "MetadataSpecification": {
+          "URL": "https://cdn.earthdata.nasa.gov/umm/granule/v1.6.4",
+          "Name": "UMM-G",
+          "Version": "1.6.4"
+        }
+      }
+    },
+    {
+      "meta": {
+        "concept-type": "granule",
+        "concept-id": "G2669131711-ASIPS",
+        "revision-id": 1,
+        "native-id": "ASIPS:AERDT_L2_VIIRS_SNPP_NRT:1682615160",
+        "provider-id": "ASIPS",
+        "format": "application/vnd.nasa.cmr.umm+json",
+        "revision-date": "2023-04-27T19:26:53.380Z"
+      },
+      "umm": {
+        "GranuleUR": "ASIPS:AERDT_L2_VIIRS_SNPP_NRT:1682615160",
+        "ProviderDates": [
+          {
+            "Date": "2023-04-27T19:26:53.202302Z",
+            "Type": "Insert"
+          },
+          {
+            "Date": "2023-04-27T19:26:53.202302Z",
+            "Type": "Update"
+          },
+          {
+            "Date": "2023-05-11T19:26:53.202302Z",
+            "Type": "Delete"
+          }
+        ],
+        "CollectionReference": {
+          "ShortName": "AERDT_L2_VIIRS_SNPP_NRT",
+          "Version": "1.1"
+        },
+        "DataGranule": {
+          "Identifiers": [
+            {
+              "Identifier": "AERDT_L2_VIIRS_SNPP.A2023117.1706.011.nrt.nc",
+              "IdentifierType": "ProducerGranuleId"
+            }
+          ],
+          "ProductionDateTime": "2023-04-27T19:26:45.907716Z",
+          "DayNightFlag": "Both",
+          "ArchiveAndDistributionInformation": [
+            {
+              "Name": "AERDT_L2_VIIRS_SNPP.A2023117.1706.011.nrt.nc",
+              "Checksum": {
+                "Value": "9aa57bcbd544dc0398e22e9c7b3d3ede",
+                "Algorithm": "MD5"
+              },
+              "Format": "netCDF-4",
+              "MimeType": "application/x-netcdf",
+              "SizeInBytes": 7091625
+            }
+          ]
+        },
+        "TemporalExtent": {
+          "RangeDateTime": {
+            "BeginningDateTime": "2023-04-27T17:06:00.000000Z",
+            "EndingDateTime": "2023-04-27T17:11:59.000000Z"
+          }
+        },
+        "SpatialExtent": {
+          "HorizontalSpatialDomain": {
+            "Geometry": {
+              "GPolygons": [
+                {
+                  "Boundary": {
+                    "Points": [
+                      {
+                        "Longitude": 154.446105957,
+                        "Latitude": 46.286346436
+                      },
+                      {
+                        "Longitude": 179.499816895,
+                        "Latitude": 62.238891602
+                      },
+                      {
+                        "Longitude": 105.665763855,
+                        "Latitude": 73.212882996
+                      },
+                      {
+                        "Longitude": 112.396903992,
+                        "Latitude": 52.696575165
+                      },
+                      {
+                        "Longitude": 154.446105957,
+                        "Latitude": 46.286346436
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        },
+        "RelatedUrls": [
+          {
+            "URL": "https://sips-data.ssec.wisc.edu/nrt/47503013/AERDT_L2_VIIRS_SNPP.A2023117.1706.011.nrt.nc",
+            "Type": "GET DATA",
+            "MimeType": "application/x-netcdf"
+          }
+        ],
+        "MetadataSpecification": {
+          "URL": "https://cdn.earthdata.nasa.gov/umm/granule/v1.6.4",
+          "Name": "UMM-G",
+          "Version": "1.6.4"
+        }
+      }
+    },
+    {
+      "meta": {
+        "concept-type": "granule",
+        "concept-id": "G2669074030-ASIPS",
+        "revision-id": 1,
+        "native-id": "ASIPS:AERDT_L2_VIIRS_SNPP_NRT:1682608680",
+        "provider-id": "ASIPS",
+        "format": "application/vnd.nasa.cmr.umm+json",
+        "revision-date": "2023-04-27T17:49:27.121Z"
+      },
+      "umm": {
+        "GranuleUR": "ASIPS:AERDT_L2_VIIRS_SNPP_NRT:1682608680",
+        "ProviderDates": [
+          {
+            "Date": "2023-04-27T17:49:26.451083Z",
+            "Type": "Insert"
+          },
+          {
+            "Date": "2023-04-27T17:49:26.451083Z",
+            "Type": "Update"
+          },
+          {
+            "Date": "2023-05-11T17:49:26.451083Z",
+            "Type": "Delete"
+          }
+        ],
+        "CollectionReference": {
+          "ShortName": "AERDT_L2_VIIRS_SNPP_NRT",
+          "Version": "1.1"
+        },
+        "DataGranule": {
+          "Identifiers": [
+            {
+              "Identifier": "AERDT_L2_VIIRS_SNPP.A2023117.1518.011.nrt.nc",
+              "IdentifierType": "ProducerGranuleId"
+            }
+          ],
+          "ProductionDateTime": "2023-04-27T17:49:16.945658Z",
+          "DayNightFlag": "Day",
+          "ArchiveAndDistributionInformation": [
+            {
+              "Name": "AERDT_L2_VIIRS_SNPP.A2023117.1518.011.nrt.nc",
+              "Checksum": {
+                "Value": "d33b711d9e13159769a9d760c8f1e72c",
+                "Algorithm": "MD5"
+              },
+              "Format": "netCDF-4",
+              "MimeType": "application/x-netcdf",
+              "SizeInBytes": 6831186
+            }
+          ]
+        },
+        "TemporalExtent": {
+          "RangeDateTime": {
+            "BeginningDateTime": "2023-04-27T15:18:00.000000Z",
+            "EndingDateTime": "2023-04-27T15:23:59.000000Z"
+          }
+        },
+        "SpatialExtent": {
+          "HorizontalSpatialDomain": {
+            "Geometry": {
+              "GPolygons": [
+                {
+                  "Boundary": {
+                    "Points": [
+                      {
+                        "Longitude": -152.252227783,
+                        "Latitude": 63.142173767
+                      },
+                      {
+                        "Longitude": -101.175109863,
+                        "Latitude": 66.492225647
+                      },
+                      {
+                        "Longitude": 11.59766674,
+                        "Latitude": 81.564460754
+                      },
+                      {
+                        "Longitude": 129.474746704,
+                        "Latitude": 74.686698914
+                      },
+                      {
+                        "Longitude": -152.252227783,
+                        "Latitude": 63.142173767
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        },
+        "RelatedUrls": [
+          {
+            "URL": "https://sips-data.ssec.wisc.edu/nrt/47501920/AERDT_L2_VIIRS_SNPP.A2023117.1518.011.nrt.nc",
+            "Type": "GET DATA",
+            "MimeType": "application/x-netcdf"
+          }
+        ],
+        "MetadataSpecification": {
+          "URL": "https://cdn.earthdata.nasa.gov/umm/granule/v1.6.4",
+          "Name": "UMM-G",
+          "Version": "1.6.4"
+        }
+      }
+    }
+  ]
+}

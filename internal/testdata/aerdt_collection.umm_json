@@ -1,0 +1,636 @@
+{
+  "hits": 2,
+  "took": 188,
+  "items": [
+    {
+      "meta": {
+        "revision-id": 7,
+        "deleted": false,
+        "format": "application/vnd.nasa.cmr.umm+json",
+        "provider-id": "LAADS",
+        "user-id": "asadullah",
+        "has-formats": false,
+        "s3-links": [
+          "s3://prod-lads/AERDT_L2_VIIRS_SNPP"
+        ],
+        "has-spatial-subsetting": false,
+        "native-id": "LAADS_AERDT_L2_VIIRS_SNPP_1",
+        "has-transforms": false,
+        "has-variables": false,
+        "concept-id": "C1688453112-LAADS",
+        "revision-date": "2023-04-12T15:03:44.726Z",
+        "has-temporal-subsetting": false,
+        "concept-type": "collection"
+      },
+      "umm": {
+        "DataLanguage": "eng",
+        "CollectionCitations": [
+          {
+            "Creator": "NASA VIIRS Atmosphere SIPS",
+            "OnlineResource": {
+              "Linkage": "https://doi.org/10.5067/VIIRS/AERDT_L2_VIIRS_SNPP.011"
+            },
+            "Publisher": "L1 and Atmosphere Archive and Distribution System (LAADS)",
+            "ReleaseDate": "2020-12-15T00:00:00.000Z",
+            "ReleasePlace": "MODAPS at NASA/GSFC",
+            "Title": "VIIRS/SNPP Dark Target Aerosol L2 6-Min Swath 6 km",
+            "Version": "1.1"
+          }
+        ],
+        "SpatialExtent": {
+          "GranuleSpatialRepresentation": "GEODETIC",
+          "HorizontalSpatialDomain": {
+            "Geometry": {
+              "BoundingRectangles": [
+                {
+                  "EastBoundingCoordinate": 180,
+                  "NorthBoundingCoordinate": 90,
+                  "SouthBoundingCoordinate": -90,
+                  "WestBoundingCoordinate": -180
+                }
+              ],
+              "CoordinateSystem": "CARTESIAN"
+            },
+            "ResolutionAndCoordinateSystem": {
+              "HorizontalDataResolution": {
+                "GenericResolutions": [
+                  {
+                    "Unit": "Not provided",
+                    "XDimension": 6,
+                    "YDimension": 6
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "CollectionProgress": "ACTIVE",
+        "ScienceKeywords": [
+          {
+            "Category": "EARTH SCIENCE",
+            "Topic": "ATMOSPHERE",
+            "Term": "AEROSOLS",
+            "VariableLevel1": "AEROSOL OPTICAL DEPTH/THICKNESS"
+          },
+          {
+            "Category": "EARTH SCIENCE",
+            "Topic": "ATMOSPHERE",
+            "Term": "AEROSOLS",
+            "VariableLevel1": "AEROSOL OPTICAL DEPTH/THICKNESS",
+            "VariableLevel2": "ANGSTROM EXPONENT"
+          },
+          {
+            "Category": "EARTH SCIENCE",
+            "Topic": "ATMOSPHERE",
+            "Term": "AEROSOLS"
+          },
+          {
+            "Category": "EARTH SCIENCE",
+            "Topic": "ATMOSPHERE",
+            "Term": "AEROSOLS",
+            "VariableLevel1": "AEROSOL PARTICLE PROPERTIES"
+          }
+        ],
+        "TemporalExtents": [
+          {
+            "PrecisionOfSeconds": 1,
+            "EndsAtPresentFlag": true,
+            "RangeDateTimes": [
+              {
+                "BeginningDateTime": "2012-03-01T00:36:00.000Z"
+              }
+            ]
+          }
+        ],
+        "ProcessingLevel": {
+          "Id": "2"
+        },
+        "DOI": {
+          "DOI": "10.5067/VIIRS/AERDT_L2_VIIRS_SNPP.011"
+        },
+        "ShortName": "AERDT_L2_VIIRS_SNPP",
+        "EntryTitle": "VIIRS/SNPP Dark Target Aerosol L2 6-Min Swath 6 km",
+        "Quality": "Find Product Quality and Validation information at:\r\nhttps://darktarget.gsfc.nasa.gov/faq-page",
+        "ISOTopicCategories": [
+          "CLIMATOLOGY/METEOROLOGY/ATMOSPHERE"
+        ],
+        "DirectDistributionInformation": {
+          "Region": "us-west-2",
+          "S3BucketAndObjectPrefixNames": [
+            "s3://prod-lads/AERDT_L2_VIIRS_SNPP"
+          ],
+          "S3CredentialsAPIEndpoint": "https://data.laadsdaac.earthdatacloud.nasa.gov/s3credentials",
+          "S3CredentialsAPIDocumentationURL": "https://data.laadsdaac.earthdatacloud.nasa.gov/s3credentialsREADME"
+        },
+        "AccessConstraints": {
+          "Description": "None"
+        },
+        "MetadataLanguage": "eng",
+        "RelatedUrls": [
+          {
+            "Description": "Data product documentation",
+            "URLContentType": "PublicationURL",
+            "Type": "VIEW RELATED INFORMATION",
+            "Subtype": "PI DOCUMENTATION",
+            "URL": "https://darktarget.gsfc.nasa.gov/pubs"
+          },
+          {
+            "Description": "Search and order products from LAADS website.",
+            "URLContentType": "DistributionURL",
+            "Type": "GET DATA",
+            "Subtype": "LAADS",
+            "URL": "https://ladsweb.modaps.eosdis.nasa.gov/search/order/2/AERDT_L2_VIIRS_SNPP--5111",
+            "GetData": {
+              "Format": "Not provided",
+              "MimeType": "text/html",
+              "Size": 0,
+              "Unit": "KB"
+            }
+          },
+          {
+            "Description": "Direct link to Collection's OPeNDAP directory",
+            "URLContentType": "DistributionURL",
+            "Type": "USE SERVICE API",
+            "Subtype": "OPENDAP DATA",
+            "URL": "https://ladsweb.modaps.eosdis.nasa.gov/opendap/RemoteResources/laads/allData/5111/AERDT_L2_VIIRS_SNPP/"
+          },
+          {
+            "Description": "A pdf version User's Guide for MODIS and VIIRS dark target products.",
+            "URLContentType": "PublicationURL",
+            "Type": "VIEW RELATED INFORMATION",
+            "Subtype": "USER'S GUIDE",
+            "URL": "https://darktarget.gsfc.nasa.gov/sites/default/files/DT_Aerosol_UsersGuide_MODIS_VIIRS_v3.pdf"
+          },
+          {
+            "Description": "An Agorithm Theoretical Basis Document (ATBD) for MODIS and VIIRS dark target products.",
+            "URLContentType": "PublicationURL",
+            "Type": "VIEW RELATED INFORMATION",
+            "Subtype": "ALGORITHM THEORETICAL BASIS DOCUMENT (ATBD)",
+            "URL": "https://darktarget.gsfc.nasa.gov/atbd/overview"
+          }
+        ],
+        "ContactGroups": [
+          {
+            "ContactInformation": {
+              "Addresses": [
+                {
+                  "City": "Madison",
+                  "Country": "United States",
+                  "PostalCode": "53706",
+                  "StateProvince": "Wisconsin",
+                  "StreetAddresses": [
+                    "Space Science and Engineering Center",
+                    "University of Wisconsin"
+                  ]
+                }
+              ],
+              "ContactMechanisms": [
+                {
+                  "Type": "Email",
+                  "Value": "sips.support@ssec.wisc.edu"
+                }
+              ]
+            },
+            "GroupName": "NASA VIIRS Atmosphere SIPS",
+            "Roles": [
+              "Technical Contact"
+            ]
+          },
+          {
+            "ContactInformation": {
+              "Addresses": [
+                {
+                  "City": "Greenbelt",
+                  "Country": "United States",
+                  "PostalCode": "20771",
+                  "StateProvince": "Maryland",
+                  "StreetAddresses": [
+                    "MODAPS User Support Team",
+                    "NASA/GSFC",
+                    "Mail Code: 619"
+                  ]
+                }
+              ],
+              "ContactMechanisms": [
+                {
+                  "Type": "Email",
+                  "Value": "MODAPSUSO@lists.nasa.gov"
+                },
+                {
+                  "Type": "U.S. toll free",
+                  "Value": "800-596-8132"
+                }
+              ]
+            },
+            "GroupName": "MODAPS USER SUPPORT TEAM",
+            "Roles": [
+              "Technical Contact"
+            ]
+          }
+        ],
+        "DataDates": [
+          {
+            "Date": "2020-07-18T00:00:00.000Z",
+            "Type": "CREATE"
+          }
+        ],
+        "Abstract": "The VIIRS/SNPP Dark Target Aerosol L2 6-Min Swath 6 km product provides satellite-derived measurements of Aerosol Optical Thickness (AOT) and their properties over land and ocean, and spectral AOT and their size parameters over oceans every 6 minutes, globally.  The Suomi National Polar-orbiting Partnership (SNPP) Visible Infrared Imaging Radiometer Suite (VIIRS) incarnation of the dark target (DT) aerosol product is based on the same DT algorithm that was developed and used to derive products from the Terra and Aqua mission&#8217;s MODIS instruments.  Two separate and distinct DT algorithms exist.  One helps retrieve aerosol information over ocean (dark in visible and longer wavelengths), while the second aids retrievals over vegetated/dark-soiled land (dark in the visible).\r\n\r\nThis orbit-level product (Short-name: AERDT_L2_VIIRS_SNPP) has an at-nadir resolution of 6 km x 6 km, and progressively increases away from nadir given the sensor&#8217;s scanning geometry and Earth&#8217;s curvature.  Viewed differently, this product&#8217;s resolution accommodates 8 x 8 native VIIRS moderate-resolution (M-band) pixels that nominally have ~750 m horizontal pixel size.  Hence, the L2 DT AOT data product incorporates 64 (750 m) pixels over a 6-minute acquisition.\r\n\r\nIn contrast to collection 1 of this product, this collection 1.1 uses bowtie-restored pixels that are used for both cloud masking and for performing some retrievals using the restored pixels as well.\r\n\r\nFor more information consult LAADS product description page at:\r\n\r\nhttps://ladsweb.modaps.eosdis.nasa.gov/missions-and-measurements/products/AERDT_L2_VIIRS_SNPP\r\n\r\nOr, Dark Target aerosol team Page at: \r\nhttps://darktarget.gsfc.nasa.gov/",
+        "LocationKeywords": [
+          {
+            "Category": "GEOGRAPHIC REGION",
+            "Type": "GLOBAL"
+          }
+        ],
+        "MetadataDates": [
+          {
+            "Type": "CREATE",
+            "Date": "2020-02-04T00:00:00.000Z"
+          },
+          {
+            "Type": "UPDATE",
+            "Date": "2023-04-12T15:03:00.000Z"
+          }
+        ],
+        "VersionDescription": "SUOMI-NPP VIIRS Version 1.1 Data",
+        "Version": "1.1",
+        "Projects": [
+          {
+            "ShortName": "Suomi-NPP",
+            "LongName": "Suomi National Polar-orbiting Partnership"
+          }
+        ],
+        "UseConstraints": {
+          "LicenseURL": {
+            "Description": "License URL for data use policy",
+            "Linkage": "https://earthdata.nasa.gov/earth-observation-data/data-use-policy",
+            "MimeType": "text/html",
+            "Name": "Data Use Policy"
+          }
+        },
+        "CollectionDataType": "SCIENCE_QUALITY",
+        "DataCenters": [
+          {
+            "ContactGroups": [
+              {
+                "ContactInformation": {
+                  "ContactMechanisms": [
+                    {
+                      "Type": "Email",
+                      "Value": "sips.support@ssec.wisc.edu"
+                    }
+                  ],
+                  "RelatedUrls": [
+                    {
+                      "Type": "HOME PAGE",
+                      "URL": "https://sips.ssec.wisc.edu/",
+                      "URLContentType": "DataContactURL"
+                    }
+                  ]
+                },
+                "GroupName": "NASA VIIRS Atmosphere SIPS",
+                "Roles": [
+                  "Data Center Contact"
+                ]
+              }
+            ],
+            "ContactInformation": {
+              "RelatedUrls": [
+                {
+                  "Type": "HOME PAGE",
+                  "URL": "https://sips.ssec.wisc.edu/",
+                  "URLContentType": "DataCenterURL"
+                }
+              ]
+            },
+            "LongName": "Atmosphere Science Investigator-led Processing System, Space Science and Engineering Center, University of Wisconsin-Madison",
+            "Roles": [
+              "ORIGINATOR"
+            ],
+            "ShortName": "UWI-MAD/SSEC/ASIPS"
+          },
+          {
+            "ContactGroups": [
+              {
+                "ContactInformation": {
+                  "Addresses": [
+                    {
+                      "City": "Greenbelt",
+                      "Country": "United States",
+                      "PostalCode": "20771",
+                      "StateProvince": "Maryland",
+                      "StreetAddresses": [
+                        "MODAPS User Support Team",
+                        "NASA/GSFC",
+                        "Mail Code: 619"
+                      ]
+                    }
+                  ],
+                  "ContactMechanisms": [
+                    {
+                      "Type": "Email",
+                      "Value": "MODAPSUSO@lists.nasa.gov"
+                    },
+                    {
+                      "Type": "U.S. toll free",
+                      "Value": "800-596-8132"
+                    },
+                    {
+                      "Type": "Fax",
+                      "Value": "301-794-7035"
+                    }
+                  ],
+                  "RelatedUrls": [
+                    {
+                      "Type": "HOME PAGE",
+                      "URL": "https://modaps.modaps.eosdis.nasa.gov/",
+                      "URLContentType": "DataContactURL"
+                    }
+                  ]
+                },
+                "GroupName": "MODAPS USER SUPPORT TEAM",
+                "Roles": [
+                  "Data Center Contact"
+                ]
+              }
+            ],
+            "ContactInformation": {
+              "RelatedUrls": [
+                {
+                  "Type": "HOME PAGE",
+                  "URL": "https://modaps.modaps.eosdis.nasa.gov/",
+                  "URLContentType": "DataCenterURL"
+                }
+              ]
+            },
+            "LongName": "MODIS Adaptive Processing System, Biospheric Information Systems Branch, Hydrospheric and Biospheric Sciences Laboratory, Earth Sciences Division, Science and Exploration Directorate, Goddard Space Flight Center, NASA",
+            "Roles": [
+              "PROCESSOR"
+            ],
+            "ShortName": "NASA/GSFC/SED/ESD/HBSL/BISB/MODAPS"
+          },
+          {
+            "ContactGroups": [
+              {
+                "ContactInformation": {
+                  "Addresses": [
+                    {
+                      "City": "Greenbelt",
+                      "Country": "United States",
+                      "PostalCode": "20771",
+                      "StateProvince": "Maryland",
+                      "StreetAddresses": [
+                        "MODAPS User Support Team",
+                        "NASA/GSFC",
+                        "Mail Code: 619"
+                      ]
+                    }
+                  ],
+                  "ContactMechanisms": [
+                    {
+                      "Type": "Email",
+                      "Value": "MODAPSUSO@lists.nasa.gov"
+                    },
+                    {
+                      "Type": "U.S. toll free",
+                      "Value": "800-596-8132"
+                    },
+                    {
+                      "Type": "Fax",
+                      "Value": "301-794-7035"
+                    }
+                  ],
+                  "RelatedUrls": [
+                    {
+                      "Type": "HOME PAGE",
+                      "URL": "https://ladsweb.modaps.eosdis.nasa.gov/",
+                      "URLContentType": "DataContactURL"
+                    }
+                  ]
+                },
+                "GroupName": "MODAPS USER SUPPORT TEAM",
+                "Roles": [
+                  "Data Center Contact"
+                ]
+              }
+            ],
+            "ContactInformation": {
+              "RelatedUrls": [
+                {
+                  "Type": "HOME PAGE",
+                  "URL": "https://ladsweb.modaps.eosdis.nasa.gov/",
+                  "URLContentType": "DataCenterURL"
+                }
+              ]
+            },
+            "LongName": "L1 and Atmosphere Archive and Distribution System,Biospheric Information Systems Branch, Hydrospheric and Biospheric Sciences Laboratory, Earth Sciences Division, Science and Exploration Directorate, Goddard Space Flight Center, NASA",
+            "Roles": [
+              "DISTRIBUTOR"
+            ],
+            "ShortName": "NASA/GSFC/SED/ESD/HBSL/BISB/LAADS"
+          }
+        ],
+        "Platforms": [
+          {
+            "Type": "Earth Observation Satellites",
+            "ShortName": "Suomi-NPP",
+            "LongName": "Suomi National Polar-orbiting Partnership",
+            "Instruments": [
+              {
+                "ShortName": "VIIRS",
+                "LongName": "Visible-Infrared Imager-Radiometer Suite"
+              }
+            ]
+          }
+        ],
+        "MetadataSpecification": {
+          "URL": "https://cdn.earthdata.nasa.gov/umm/collection/v1.17.2",
+          "Name": "UMM-C",
+          "Version": "1.17.2"
+        },
+        "ArchiveAndDistributionInformation": {
+          "FileArchiveInformation": [
+            {
+              "Format": "netCDF4",
+              "FormatType": "Native",
+              "AverageFileSize": 9.15,
+              "AverageFileSizeUnit": "MB",
+              "TotalCollectionFileSizeBeginDate": "2012-03-01T00:36:00.000Z"
+            }
+          ],
+          "FileDistributionInformation": [
+            {
+              "Format": "NetCDF-4",
+              "FormatType": "Native",
+              "Media": [
+                "Online (HTTPS)"
+              ],
+              "AverageFileSize": 9.15,
+              "AverageFileSizeUnit": "MB",
+              "TotalCollectionFileSizeBeginDate": "2012-03-01T00:36:00.000Z",
+              "Fees": "No Fee"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "meta": {
+        "revision-id": 5,
+        "deleted": false,
+        "format": "application/vnd.nasa.cmr.umm+json",
+        "provider-id": "ASIPS",
+        "user-id": "pingest",
+        "has-formats": false,
+        "has-spatial-subsetting": false,
+        "native-id": "mmt_collection_12892",
+        "has-transforms": false,
+        "has-variables": false,
+        "concept-id": "C1976333380-ASIPS",
+        "revision-date": "2022-04-20T18:24:27.923Z",
+        "has-temporal-subsetting": false,
+        "concept-type": "collection"
+      },
+      "umm": {
+        "SpatialExtent": {
+          "GranuleSpatialRepresentation": "GEODETIC",
+          "HorizontalSpatialDomain": {
+            "Geometry": {
+              "BoundingRectangles": [
+                {
+                  "EastBoundingCoordinate": 180,
+                  "NorthBoundingCoordinate": 90,
+                  "SouthBoundingCoordinate": -90,
+                  "WestBoundingCoordinate": -180
+                }
+              ],
+              "CoordinateSystem": "GEODETIC"
+            }
+          },
+          "SpatialCoverageType": "HORIZONTAL"
+        },
+        "CollectionProgress": "ACTIVE",
+        "ScienceKeywords": [
+          {
+            "Category": "EARTH SCIENCE",
+            "Term": "CLOUDS",
+            "Topic": "ATMOSPHERE"
+          }
+        ],
+        "TemporalExtents": [
+          {
+            "EndsAtPresentFlag": true,
+            "RangeDateTimes": [
+              {
+                "BeginningDateTime": "2020-06-09T15:30:00.000Z"
+              }
+            ]
+          }
+        ],
+        "ProcessingLevel": {
+          "Id": "2"
+        },
+        "DOI": {
+          "DOI": "10.5067/VIIRS/AERDT_L2_VIIRS_SNPP_NRT.001"
+        },
+        "ShortName": "AERDT_L2_VIIRS_SNPP_NRT",
+        "EntryTitle": "VIIRS/SNPP Dark Target Aerosol L2 6-Min Swath ",
+        "RelatedUrls": [
+          {
+            "Description": "Landing Page",
+            "Type": "DATA SET LANDING PAGE",
+            "URL": "https://sips.ssec.wisc.edu/about/products/1/AERDT_L2_VIIRS_SNPP_NRT.html",
+            "URLContentType": "CollectionURL"
+          }
+        ],
+        "Abstract": "The Suomi National Polar-orbiting Partnership (SNPP) Visible Infrared Imaging Radiometer Suite (VIIRS) NASA standard Level-2 (L2) dark target (DT) aerosol product provides satellite-derived measurements of Aerosol Optical Thickness (AOT) and their properties over land and ocean, and spectral AOT and their size parameters over oceans every 6 minutes, globally. The VIIRS incarnation of the DT aerosol product is based on the same DT algorithm that was developed and used to derive products from the Terra and Aqua mission’s MODIS instruments. Two separate and distinct DT algorithms exist. One helps retrieve aerosol information over ocean (dark in visible and longer wavelengths), while the second aids retrievals over vegetated/dark-soiled land (dark in the visible).",
+        "MetadataDates": [
+          {
+            "Type": "CREATE",
+            "Date": "2020-12-08T15:49:00.000Z"
+          },
+          {
+            "Type": "UPDATE",
+            "Date": "2022-04-20T18:24:00.000Z"
+          }
+        ],
+        "Version": "1.1",
+        "UseConstraints": {
+          "LicenseURL": {
+            "Description": "License URL for data use policy",
+            "Linkage": "https://earthdata.nasa.gov/earth-observation-data/data-use-policy",
+            "MimeType": "text/html",
+            "Name": "Data Use Policy"
+          }
+        },
+        "DataCenters": [
+          {
+            "ContactGroups": [
+              {
+                "ContactInformation": {
+                  "ContactMechanisms": [
+                    {
+                      "Type": "Email",
+                      "Value": "sips.support@ssec.wisc.edu"
+                    }
+                  ],
+                  "RelatedUrls": [
+                    {
+                      "Type": "HOME PAGE",
+                      "URL": "https://sips.ssec.wisc.edu/",
+                      "URLContentType": "DataContactURL"
+                    }
+                  ]
+                },
+                "GroupName": "Atmosphere SIPS User Support",
+                "Roles": [
+                  "Data Center Contact"
+                ]
+              }
+            ],
+            "ContactInformation": {
+              "ContactMechanisms": [
+                {
+                  "Type": "Email",
+                  "Value": "sips.support@ssec.wisc.edu"
+                }
+              ],
+              "RelatedUrls": [
+                {
+                  "Type": "HOME PAGE",
+                  "URL": "https://sips.ssec.wisc.edu/",
+                  "URLContentType": "DataCenterURL"
+                }
+              ]
+            },
+            "LongName": "Atmosphere Science Investigator-led Processing System, Space Science and Engineering Center, University of Wisconsin-Madison",
+            "Roles": [
+              "ARCHIVER",
+              "DISTRIBUTOR",
+              "ORIGINATOR",
+              "PROCESSOR"
+            ],
+            "ShortName": "UWI-MAD/SSEC/ASIPS"
+          }
+        ],
+        "Platforms": [
+          {
+            "Instruments": [
+              {
+                "LongName": "Visible-Infrared Imager-Radiometer Suite",
+                "ShortName": "VIIRS"
+              }
+            ],
+            "LongName": "Suomi National Polar-orbiting Partnership",
+            "ShortName": "Suomi-NPP",
+            "Type": "Earth Observation Satellites"
+          }
+        ],
+        "MetadataSpecification": {
+          "URL": "https://cdn.earthdata.nasa.gov/umm/collection/v1.17.2",
+          "Name": "UMM-C",
+          "Version": "1.17.2"
+        }
+      }
+    }
+  ]
+}
