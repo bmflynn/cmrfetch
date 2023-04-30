@@ -3,6 +3,7 @@ package cmd
 import (
 	"github.com/bmflynn/cmrfetch/cmd/collections"
 	"github.com/bmflynn/cmrfetch/cmd/granules"
+	keyworkds "github.com/bmflynn/cmrfetch/cmd/keywords"
 	"github.com/bmflynn/cmrfetch/internal"
 	"github.com/spf13/cobra"
 )
@@ -15,9 +16,13 @@ func failOnError(err error) {
 
 var rootCmd = &cobra.Command{
 	Use:   "cmrfetch",
-  Short: "Search for NASA Earthdata collections and download view associated granules",
+  Short: "Search for and download NASA Earthdata collections and granules",
 	Long: `
-Search for NASA Earthdata collections and download view associated granules.
+Search for and download NASA Earthdata collections and granules.
+
+This tool is provided with the intention to make discovering, and potentially 
+downloading, NASA EOSDIS products available via the NASA Earthdata CMR from the 
+command line as easy as possible.
 
 References:
 
@@ -35,22 +40,6 @@ References:
 
 Project: https://github.com/bmflynn/cmrfetch
 `,
-  Example: `
-  Search for all products with a collection short name prefix:
-
-    cmrfetch collections -s CLDMSK_*
-
-  Search for multiple collection short names:
-
-    cmrfetch collections -s CLDMSK_L2_VIIRS_SNPP -s CLDMSK_L2_VIIRS_NOAA20,CLDMSK_L2_MODIS_Aqua
-
-  Search for a collection by keyword:
-
-    cmrfetch collections -k aerdt
-
-  Search for granules:
-  
-  `,
 	Version:      internal.Version,
   CompletionOptions: cobra.CompletionOptions{
     HiddenDefaultCmd: true,
@@ -60,6 +49,7 @@ Project: https://github.com/bmflynn/cmrfetch
 func init() {
 	rootCmd.AddCommand(collections.Cmd)
 	rootCmd.AddCommand(granules.Cmd)
+  rootCmd.AddCommand(keyworkds.Cmd)
 }
 
 func Execute() error {

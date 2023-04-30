@@ -39,14 +39,14 @@ func (api *CMRSearchAPI) debug(msg string, args ...any) {
 	}
 }
 
-type ScrollResult[T Granule | Collection | gjson.Result] struct {
+type ScrollResult[T Granule | Collection | gjson.Result | Facet] struct {
 	Ch   chan T
 	err  error
 	hits int
 	mu   *sync.Mutex
 }
 
-func newScrollResult[T Granule | Collection | gjson.Result]() ScrollResult[T] {
+func newScrollResult[T Granule | Collection | gjson.Result | Facet]() ScrollResult[T] {
   return ScrollResult[T]{
     Ch: make(chan T, 1),
     mu: &sync.Mutex{},
@@ -127,15 +127,18 @@ func (api *CMRSearchAPI) Get(ctx context.Context, url string) (ScrollResult[gjso
 				return
 			}
 			items := gjson.Get(string(body), "items").Array()
+      if len(items) == 0 {
+        items = gjson.Get(string(body), "feed.entry").Array()
+      }
+
+			for _, item := range items {
+				result.Ch <- item
+			}
 
 			// No results or empty search-after-header indicates pagination is done
 			searchAfter = resp.Header.Get("cmr-search-after")
 			if searchAfter == "" || len(items) == 0 {
 				return
-			}
-
-			for _, item := range items {
-				result.Ch <- item
 			}
 		}
 	}()

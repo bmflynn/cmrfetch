@@ -14,7 +14,7 @@ func tableWriter(zult internal.CollectionResult, w io.Writer) error {
 	t.SetOutputMirror(w)
   t.SetStyle(table.StyleLight)
 
-	t.AppendHeader(table.Row{"shortname", "version", "concept", "revision_id", "provider", "title"})
+	t.AppendHeader(table.Row{"shortname", "version", "concept", "revision_id", "provider"})
 
 	for col := range zult.Ch {
 		t.AppendRow(table.Row{
@@ -23,7 +23,6 @@ func tableWriter(zult internal.CollectionResult, w io.Writer) error {
 			col["concept_id"],
       col["revision_id"],
 			col["provider"],
-			col["title"],
 		})
 	}
 
