@@ -58,6 +58,15 @@ NASA Earthdata Authentication
     https://wiki.earthdata.nasa.gov/display/EL/How+To+Access+Data+With+cURL+And+Wget
 
 `,
+  Example: `
+  Search for all products with a collection short name prefix:
+
+    cmrfetch granules -s CLDMSK_*
+
+  Search for multiple collection short names:
+
+    cmrfetch granules -s CLDMSK_L2_VIIRS_SNPP -s CLDMSK_L2_VIIRS_NOAA20,CLDMSK_L2_MODIS_Aqua
+`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		flags := cmd.Flags()
 
@@ -148,7 +157,7 @@ func init() {
 
 	flags.StringSliceP("nativeid", "N", nil, "granule native id")
 	flags.StringSliceP("collection", "c", nil, "Collection concept id")
-	flags.StringSliceP("shortname", "n", nil, "Collection short name")
+	flags.StringSliceP("shortname", "s", nil, "Collection short name")
 	flags.StringP("daynight", "D", "", "Day or night grnaules. One of day, night, both, or unspecified")
 	flags.VarP(&timerange, "timerange", "t", "Timerange as <start>,[<end>]")
 	flags.Float64Slice("polygon", nil,

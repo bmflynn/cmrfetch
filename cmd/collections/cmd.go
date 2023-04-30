@@ -22,6 +22,19 @@ var Cmd = &cobra.Command{
 	Use:     "collections",
 	Aliases: []string{"c", "col", "collection"},
 	Short:   "Search for and discover Collections",
+  Example: `
+  Search for all products with a collection short name prefix:
+
+    cmrfetch collections -s CLDMSK_*
+
+  Search for multiple collection short names:
+
+    cmrfetch collections -s CLDMSK_L2_VIIRS_SNPP -s CLDMSK_L2_VIIRS_NOAA20,CLDMSK_L2_MODIS_Aqua
+
+  Search for a collection by keyword:
+
+    cmrfetch collections -k aerdt
+`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		flags := cmd.Flags()
 		output, err := flags.GetString("output")
@@ -67,8 +80,9 @@ func init() {
 		"Filter on provider name. May be provided more than once or comma separated. "+
 			"Example providers include ASIPS or LAADS. For a listing of available providers "+
 			"see https://cmr.earthdata.nasa.gov/search/site/collections/directory")
-	flags.StringP("since", "s", "", "Filter to collections that have a revision date greater"+
+	flags.String("since", "", "Filter to collections that have a revision date greater"+
 		"or equal to this UTC time, formatted as <yyyy>-<mm>-<dd>T<hh>:<mm>:<dd>Z")
+  flags.StringSliceP("shortname", "s", nil, "Filter on collection short name or pattern (support ? or *)")
 	flags.StringSliceP("instrument", "i", []string{},
 		"Filter on instrument short name. May be provided more than once or comma separated. "+
 			"Common instruments include VIIRS, MODIS, CrIS")
@@ -108,6 +122,10 @@ func newParams(flags *pflag.FlagSet) (internal.SearchCollectionParams, error) {
 	a, err := flags.GetStringSlice("provider")
 	failOnError(err)
 	params.Providers(a...)
+
+	a, err = flags.GetStringSlice("shortname")
+	failOnError(err)
+	params.ShortNames(a...)
 
 	a, err = flags.GetStringSlice("platform")
 	failOnError(err)

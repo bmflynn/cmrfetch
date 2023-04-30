@@ -51,6 +51,7 @@ type SearchCollectionParams struct {
 	providers      []string
 	platforms      []string
 	instruments    []string
+	shortnames     []string
 	titlePattern   string
 	updatedSince   *time.Time
 	granulesAdded  *TimeRange
@@ -73,7 +74,12 @@ func (p *SearchCollectionParams) Keyword(kw string) *SearchCollectionParams {
 }
 
 func (p *SearchCollectionParams) Providers(names ...string) *SearchCollectionParams {
-	p.providers = names
+	p.shortnames = names
+	return p
+}
+
+func (p *SearchCollectionParams) ShortNames(names ...string) *SearchCollectionParams {
+	p.shortnames = names
 	return p
 }
 
@@ -159,6 +165,13 @@ func (p *SearchCollectionParams) build() (url.Values, error) {
 	}
 	for _, name := range p.instruments {
 		query.Add("instrument", name)
+	}
+	if len(p.shortnames) != 0 {
+		query.Set("options[short_name][pattern]", "true")
+		query.Set("options[short_name][ignore_case]", "true")
+	}
+	for _, name := range p.shortnames {
+		query.Add("short_name", name)
 	}
 	if p.titlePattern != "" {
 		query.Set("options[entry_title][pattern]", "true")

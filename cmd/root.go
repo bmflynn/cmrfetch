@@ -15,15 +15,14 @@ func failOnError(err error) {
 
 var rootCmd = &cobra.Command{
 	Use:   "cmrfetch",
-	Short: "Search for NASA Earthdata CMR products and collections.",
+  Short: "Search for NASA Earthdata collections and download view associated granules",
 	Long: `
-View NASA CMR Collection and granule metdata and download products.
-
-Use the collections subcommand to search for and discover NASA Earthdata collections
-available via the CMR Search API.
+Search for NASA Earthdata collections and download view associated granules.
 
 References:
 
+  * NASA Eathdata
+    https://earthdata.nasa.gov
   * NASA Earthdata CMR Search API:
     https://cmr.earthdata.nasa.gov/search
   * NASA Earthdata Collection Directory:
@@ -36,6 +35,22 @@ References:
 
 Project: https://github.com/bmflynn/cmrfetch
 `,
+  Example: `
+  Search for all products with a collection short name prefix:
+
+    cmrfetch collections -s CLDMSK_*
+
+  Search for multiple collection short names:
+
+    cmrfetch collections -s CLDMSK_L2_VIIRS_SNPP -s CLDMSK_L2_VIIRS_NOAA20,CLDMSK_L2_MODIS_Aqua
+
+  Search for a collection by keyword:
+
+    cmrfetch collections -k aerdt
+
+  Search for granules:
+  
+  `,
 	Version:      internal.Version,
   CompletionOptions: cobra.CompletionOptions{
     HiddenDefaultCmd: true,
