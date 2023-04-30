@@ -20,10 +20,6 @@ var rootCmd = &cobra.Command{
 	Long: `
 Search for and download NASA Earthdata collections and granules.
 
-This tool is provided with the intention to make discovering, and potentially 
-downloading, NASA EOSDIS products available via the NASA Earthdata CMR from the 
-command line as easy as possible.
-
 References:
 
   * NASA Eathdata
