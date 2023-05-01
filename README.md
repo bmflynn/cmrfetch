@@ -64,6 +64,16 @@ This is implemeted here via the `keywords` subcommand. My recommendtaion it to j
 searching for keywords you think may be relavent and hopefully you'll find what you are 
 looking for.
 
+## Output Formatting
+Output is by default formatted to provide a basic level of data that is easily readable. Commands
+generally provide additional output formats that will provide a greater level of detail or 
+machine readable output such as JSON or CSV.
+
+Note, however, that when search for granules the result set can be very large and the default
+output format reads all results in to memory before formatting. So, when searching granules be
+sure to provide as many filters as possible or perhaps choose an output format that handles 
+streaming output, such as JSON or CSV.
+
 ## Error Handling
 There is not a lot of direct error handling with regard to the format of input parameters. 
 Instead, `cmrfetch` relies on the CMR API to return errors regarding input field/parameters.
