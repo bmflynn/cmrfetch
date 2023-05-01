@@ -54,6 +54,15 @@ that login is only performed once, but it does not save the cookies to disk.
 This is contrary to `curl` or `wget` examples that you will see in the 
 [documentation](https://urs.earthdata.nasa.gov/documentation/for_users).
 
+## Keywords
+There does not seem to be any canonical list of valid names for searchable resource names
+such as `provier`, `platform`, and `instrument`. CMR does however support a simple keyword
+search via their [Facet Auto-Complete](https://cmr.earthdata.nasa.gov/search/site/docs/search/api.html#autocomplete-facets)
+service.
+
+This is implemeted here via the `keywords` subcommand. My recommendtaion it to just start
+searching for keywords you think may be relavent and hopefully you'll find what you are 
+looking for.
 
 ## Examples
 
