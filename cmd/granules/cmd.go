@@ -105,9 +105,9 @@ NASA Earthdata Authentication
 			}
 		}
 
-    if flags.Changed("filename") && !flags.Changed("collection") {
-      return fmt.Errorf("--collection is required when using --filename")
-    }
+		if flags.Changed("filename") && !flags.Changed("collection") {
+			return fmt.Errorf("--collection is required when using --filename")
+		}
 
 		params, err := newParams(flags)
 		if err != nil {
@@ -157,7 +157,7 @@ func init() {
 	flags.StringSliceP("shortname", "s", nil, "Collection short name")
 	flags.StringSliceP("filename", "f", nil,
 		"Filter on an approximation of the filename. Must be sepcified with --collection. In CMR metadata "+
-      "terms this searches the granule ur and producer granule id.")
+			"terms this searches the granule ur and producer granule id.")
 	flags.StringP("daynight", "D", "", "Day or night grnaules. One of day, night, both, or unspecified")
 	flags.VarP(&timerange, "timerange", "t", "Timerange as <start>,[<end>]")
 	flags.Float64Slice("polygon", nil,

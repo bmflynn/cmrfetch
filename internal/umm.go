@@ -80,7 +80,7 @@ func (sk *UMMScienceKeyword) UnmarshalJSON(dat []byte) error {
 		if !ok {
 			break
 		}
-    level += 1
+		level += 1
 		out.VariableLevels = append(out.VariableLevels, val.(string))
 	}
 	*sk = *out
@@ -127,9 +127,9 @@ type UMMCollection struct {
 	ScienceKeywords     []UMMScienceKeyword
 	TemporalExtents     []UMMTemporalExtents
 	ProcessingLevel     struct {
-    Id string 
-  }
-	DOI                 struct {
+		Id string
+	}
+	DOI struct {
 		DOI string
 	}
 	ShortName         string
@@ -168,14 +168,13 @@ type UMMCollectionItem struct {
 }
 
 func encodeTime(t time.Time) string {
-  return t.Format("2006-01-02T15:04:05Z")
+	return t.Format("2006-01-02T15:04:05Z")
 }
 
 func encodeTimeRange(tr TimeRange) string {
-  s := encodeTime(tr.Start) + ","
-  if tr.End != nil {
-    s += encodeTime(*tr.End)
-  }
-  return s
-
+	s := encodeTime(tr.Start) + ","
+	if tr.End != nil {
+		s += encodeTime(*tr.End)
+	}
+	return s
 }

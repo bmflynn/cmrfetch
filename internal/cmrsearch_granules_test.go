@@ -16,7 +16,7 @@ func TestGranuleSearchParams(t *testing.T) {
 	q, err := params.
 		DayNightFlag("day").
 		ShortNames("s1", "s2").
-    Filenames("f1", "f2").
+		Filenames("f1", "f2").
 		Collections("c1", "c2").
 		NativeIDs("n1", "n2").
 		BoundingBox([]float64{1, 2, 3, 4}).
@@ -44,7 +44,6 @@ func TestGranuleSearchParams(t *testing.T) {
 }
 
 func Test_newGranuleFromUMM(t *testing.T) {
-
 	t.Run("name lookup", func(t *testing.T) {
 		expected := "I AM GRANULE NAME"
 		cases := []struct {

@@ -33,7 +33,7 @@ var Cmd = &cobra.Command{
 	Aliases: []string{"k", "kw", "key", "keyword"},
 	Args:    cobra.ExactArgs(1),
 	Short:   "Search for permissible names for platform, instrument, and provider",
-  Long: `
+	Long: `
 
 Using this search can be hit-or-miss, as not all platforms, instruments, and 
 providers are registered. However, it can be useful for those that are registered 

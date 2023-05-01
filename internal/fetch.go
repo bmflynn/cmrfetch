@@ -53,7 +53,7 @@ func (wh *writerHasher) Write(buf []byte) (int, error) {
 	if wh.hash != nil {
 		wh.hash.Write(buf[:n])
 	}
-  wh.size += int64(n)
+	wh.size += int64(n)
 	return n, err
 }
 

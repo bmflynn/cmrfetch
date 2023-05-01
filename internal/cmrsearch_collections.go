@@ -203,10 +203,10 @@ func (p *SearchCollectionParams) build() (url.Values, error) {
 	if p.sortField != "" {
 		query.Set("sort_key", p.sortField)
 	}
-  if p.dataType != "" {
+	if p.dataType != "" {
 		query.Set("options[collection_data_type][ignore_case]", "true")
-    query.Set("collection_data_type", p.dataType)
-  }
+		query.Set("collection_data_type", p.dataType)
+	}
 	return query, nil
 }
 

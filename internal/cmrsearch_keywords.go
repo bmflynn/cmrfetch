@@ -17,9 +17,9 @@ func (api *CMRSearchAPI) SearchFacets(ctx context.Context, val string, types []s
 	query := url.Values{}
 	query.Set("q", val)
 	query.Set("page_size", fmt.Sprintf("%v", api.pageSize))
-  for _, typ := range types {
+	for _, typ := range types {
 		query.Add("type[]", typ)
-  }
+	}
 	url := fmt.Sprintf("%s/autocomplete?%s", defaultCMRSearchURL, query.Encode())
 
 	zult, err := api.Get(ctx, url)

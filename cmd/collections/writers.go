@@ -12,7 +12,7 @@ type outputWriter func(internal.CollectionResult, io.Writer) error
 func tableWriter(zult internal.CollectionResult, w io.Writer) error {
 	t := table.NewWriter()
 	t.SetOutputMirror(w)
-  t.SetStyle(table.StyleLight)
+	t.SetStyle(table.StyleLight)
 
 	t.AppendHeader(table.Row{"shortname", "version", "concept", "revision_id", "provider"})
 
@@ -21,7 +21,7 @@ func tableWriter(zult internal.CollectionResult, w io.Writer) error {
 			col["shortname"],
 			col["version"],
 			col["concept_id"],
-      col["revision_id"],
+			col["revision_id"],
 			col["provider"],
 		})
 	}
@@ -47,7 +47,7 @@ func writeCollection(zult internal.CollectionResult, w io.Writer, long bool) err
 	for col := range zult.Ch {
 		t := table.NewWriter()
 		t.SetOutputMirror(w)
-    t.SetStyle(table.StyleLight)
+		t.SetStyle(table.StyleLight)
 		t.SetTitle(col["title"])
 
 		for _, name := range fields {

@@ -16,7 +16,7 @@ func failOnError(err error) {
 
 var rootCmd = &cobra.Command{
 	Use:   "cmrfetch",
-  Short: "Search for and download NASA Earthdata collections and granules",
+	Short: "Search for and download NASA Earthdata collections and granules",
 	Long: `
 Search for and download NASA Earthdata collections and granules.
 
@@ -36,17 +36,17 @@ References:
 
 Project: https://github.com/bmflynn/cmrfetch
 `,
-	Version:      internal.Version,
-  CompletionOptions: cobra.CompletionOptions{
-    HiddenDefaultCmd: true,
-  },
-  SilenceUsage: true,
+	Version: internal.Version,
+	CompletionOptions: cobra.CompletionOptions{
+		HiddenDefaultCmd: true,
+	},
+	SilenceUsage: true,
 }
 
 func init() {
 	rootCmd.AddCommand(collections.Cmd)
 	rootCmd.AddCommand(granules.Cmd)
-  rootCmd.AddCommand(keyworkds.Cmd)
+	rootCmd.AddCommand(keyworkds.Cmd)
 }
 
 func Execute() error {

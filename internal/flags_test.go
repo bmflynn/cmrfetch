@@ -14,13 +14,13 @@ func TestTimeRangeValue(t *testing.T) {
 
 	require.NoError(t, tr.Set("1970-01-01,"))
 	require.True(t, tr.Start.Equal(time.Unix(0, 0).UTC()))
-  require.Nil(t, tr.End)
+	require.Nil(t, tr.End)
 
-  require.NoError(t, tr.Set("1970-01-01T00:00:00Z,"))
+	require.NoError(t, tr.Set("1970-01-01T00:00:00Z,"))
 	require.True(t, tr.Start.Equal(time.Unix(0, 0).UTC()))
-  require.Nil(t, tr.End)
+	require.Nil(t, tr.End)
 
-  require.NoError(t, tr.Set("1970-01-01T00:00:00Z,1970-01-01T00:00:00Z"))
+	require.NoError(t, tr.Set("1970-01-01T00:00:00Z,1970-01-01T00:00:00Z"))
 	require.True(t, tr.Start.Equal(time.Unix(0, 0).UTC()))
 	require.True(t, tr.End.Equal(time.Unix(0, 0).UTC()))
 }

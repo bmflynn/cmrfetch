@@ -47,10 +47,10 @@ type ScrollResult[T Granule | Collection | gjson.Result | Facet] struct {
 }
 
 func newScrollResult[T Granule | Collection | gjson.Result | Facet]() ScrollResult[T] {
-  return ScrollResult[T]{
-    Ch: make(chan T, 1),
-    mu: &sync.Mutex{},
-  }
+	return ScrollResult[T]{
+		Ch: make(chan T, 1),
+		mu: &sync.Mutex{},
+	}
 }
 
 func (r ScrollResult[T]) Err() error {
@@ -127,9 +127,9 @@ func (api *CMRSearchAPI) Get(ctx context.Context, url string) (ScrollResult[gjso
 				return
 			}
 			items := gjson.Get(string(body), "items").Array()
-      if len(items) == 0 {
-        items = gjson.Get(string(body), "feed.entry").Array()
-      }
+			if len(items) == 0 {
+				items = gjson.Get(string(body), "feed.entry").Array()
+			}
 
 			for _, item := range items {
 				result.Ch <- item

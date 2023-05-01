@@ -6,9 +6,8 @@ import (
 	"github.com/bmflynn/cmrfetch/cmd"
 )
 
-
 func main() {
-  if err := cmd.Execute(); err != nil {
-    fmt.Println("Use --help for more information")
-  }
+	if err := cmd.Execute(); err != nil {
+		fmt.Println("Use --help for more information")
+	}
 }

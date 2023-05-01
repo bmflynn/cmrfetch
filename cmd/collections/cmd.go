@@ -50,7 +50,7 @@ func init() {
 		"Filter to collections tagged as a standard proudct.")
 	flags.Bool("has-granules", true,
 		"Filter to collections with granules.")
-  flags.StringP("datatype", "d", "", "Collection data type, e.g., NRT, SCIENCE_QUALITY, OTHER, etc...")
+	flags.StringP("datatype", "d", "", "Collection data type, e.g., NRT, SCIENCE_QUALITY, OTHER, etc...")
 }
 
 func failOnError(err error) {
@@ -60,11 +60,11 @@ func failOnError(err error) {
 }
 
 func requiredFlags() string {
-  s := []string{}
-  for _, name := range requiredFlagNames {
-    s = append(s, "--"+name)
-  }
-  return strings.Join(s, ", ")
+	s := []string{}
+	for _, name := range requiredFlagNames {
+		s = append(s, "--"+name)
+	}
+	return strings.Join(s, ", ")
 }
 
 var Cmd = &cobra.Command{
@@ -171,11 +171,11 @@ func newParams(flags *pflag.FlagSet) (internal.SearchCollectionParams, error) {
 	failOnError(err)
 	params.Instruments(a...)
 
-  if flags.Changed("datatype") {
-    s, err := flags.GetString("datatype")
-    failOnError(err)
-    params.DataType(s)
-  }
+	if flags.Changed("datatype") {
+		s, err := flags.GetString("datatype")
+		failOnError(err)
+		params.DataType(s)
+	}
 
 	if flags.Changed("cloud-hosted") {
 		b, err := flags.GetBool("cloud-hosted")

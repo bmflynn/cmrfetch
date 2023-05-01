@@ -1,7 +1,7 @@
 package internal
 
 var (
-  Version = "??"
-  BuildTime = "??"
-  GitSHA = "??"
+	Version   = "??"
+	BuildTime = "??"
+	GitSHA    = "??"
 )

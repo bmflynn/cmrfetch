@@ -17,7 +17,7 @@ func longWriter(zult internal.GranuleResult, w io.Writer, fields []string) error
 }
 
 func shortWriter(zult internal.GranuleResult, w io.Writer, _ []string) error {
-  fields := []string{"name", "size", "native_id", "concept_id", "revision_id"}
+	fields := []string{"name", "size", "native_id", "concept_id", "revision_id"}
 	t := table.NewWriter()
 	t.SetOutputMirror(w)
 	t.SetStyle(table.StyleLight)

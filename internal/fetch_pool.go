@@ -32,10 +32,10 @@ func FetchConcurrentWithContext(ctx context.Context, reqs chan DownloadRequest, 
 	wg := &sync.WaitGroup{}
 	for i := 0; i < concurrency; i++ {
 		wg.Add(1)
-    fetcher, err := fetcherFactory()
-    if err != nil {
-      return nil, fmt.Errorf("failed to init fetcher: %w", err)
-    }
+		fetcher, err := fetcherFactory()
+		if err != nil {
+			return nil, fmt.Errorf("failed to init fetcher: %w", err)
+		}
 		go downloader(ctx, wg, reqs, results, fetcher)
 	}
 
@@ -89,7 +89,7 @@ func downloader(
 			start := time.Now()
 
 			destdir, fname := filepath.Split(zult.Path)
-      dest, err := os.CreateTemp(destdir, fmt.Sprintf(".%s.*", fname))
+			dest, err := os.CreateTemp(destdir, fmt.Sprintf(".%s.*", fname))
 			if err != nil {
 				return fmt.Errorf("creating dest: %w", err)
 			}
@@ -106,7 +106,7 @@ func downloader(
 			if err != nil {
 				return err
 			}
-      dest.Close()  // Close before checksumming
+			dest.Close() // Close before checksumming
 			zult.Checksum = w.Checksum()
 			zult.Size = w.size
 			zult.Duration = time.Since(start)
@@ -114,15 +114,14 @@ func downloader(
 			if zult.Checksum != req.Checksum {
 				return fmt.Errorf("got checksum %s, expected %s", zult.Checksum, req.Checksum)
 			}
-      if err := os.Rename(dest.Name(), zult.Path); err != nil {
-        return fmt.Errorf("failed to rename %s to %s: %w", dest.Name(), zult.Path, err)
-      }
-      if err := os.Chmod(zult.Path, 0o644); err != nil {
-        return fmt.Errorf("failed to update permissions on %s: %w", zult.Path, err)
-      }
+			if err := os.Rename(dest.Name(), zult.Path); err != nil {
+				return fmt.Errorf("failed to rename %s to %s: %w", dest.Name(), zult.Path, err)
+			}
+			if err := os.Chmod(zult.Path, 0o644); err != nil {
+				return fmt.Errorf("failed to update permissions on %s: %w", zult.Path, err)
+			}
 			return nil
 		}()
-
 		if err != nil {
 			zult.Err = &FetchError{Request: req, Err: err}
 		}

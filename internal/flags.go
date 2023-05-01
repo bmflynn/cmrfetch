@@ -36,7 +36,7 @@ func (v *TimeRangeValue) parse(s string) *time.Time {
 func (tr *TimeRangeValue) Set(val string) error {
 	parts := strings.SplitN(val, ",", 2)
 	if len(parts) != 2 {
-    return fmt.Errorf("expected <start>,[<end>], with format <yyyy-mm-dd>[T<hh:mm:ss>Z]")
+		return fmt.Errorf("expected <start>,[<end>], with format <yyyy-mm-dd>[T<hh:mm:ss>Z]")
 	}
 
 	x := &TimeRangeValue{}

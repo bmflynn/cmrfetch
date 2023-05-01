@@ -11,7 +11,7 @@ func CanWrite(path string) bool {
 
 func Exists(path string) bool {
 	_, err := os.Stat(path)
-  return err == nil
+	return err == nil
 }
 
 func IsDir(path string) bool {
