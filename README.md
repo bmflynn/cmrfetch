@@ -143,4 +143,14 @@ an issue.
    │ boundingbox         │ [-170.845001,-41.507393,-135.764923,-36.170902,-144.453003,-16.412685,-172.955856,-20.74267,-170.845001,-41.507393]                                   │
    └─────────────────────┴───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
    ```
-   
+
+References:
+
+  * [NASA Eathdata](https://earthdata.nasa.gov)
+  * [NASA Earthdata CMR Search API](https://cmr.earthdata.nasa.gov/search)
+  * [NASA Earthdata Collection Directory](https://cmr.earthdata.nasa.gov/search/site/collections/directory/eosdis)
+    - This is particularly useful as a reasonable browseable list of Providers and Collections.
+  * NASA Global Change Master Directory -- Keywords
+    - [Instruments](https://gcmd.earthdata.nasa.gov/KeywordViewer/scheme/instruments)
+    - [Platforms](https://gcmd.earthdata.nasa.gov/KeywordViewer/scheme/platforms)
+
