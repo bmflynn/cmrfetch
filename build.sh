@@ -6,20 +6,28 @@ export GOARCH=amd64
 export CGO_ENABLED=0
 
 function build() {
+  export GOOS=$1
+  export GOARCH=$2
+  local sfx=${GOOS}_${GOARCH}
+  pkg=github.com/bmflynn/cmrfetch/internal
+  buildtime=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+  sha=$(git rev-parse HEAD)
+
+  binname=cmrfetch
+  if [[ $GOOS == "windows" ]]; then
+    binname=${binname}.exe
+  fi
+  outdir=./build/cmrfetch_${sfx}
+  mkdir -p ${outdir}
+  go build \
+    -o ${outdir}/${binname} \
+    -ldflags "-s -w -X ${pkg}.Version=${VER} -X ${pkg}.BuildTime=${buildtime} -X ${pkg}.GitSHA=${sha} --extldflags '-static'"
+  cp README.md ${outdir}
   (
-    export GOOS=$1
-    export GOARCH=$2
-    local sfx=${GOOS}_${GOARCH}
-    if [[ $GOOS == "windows" ]]; then
-      sfx=${sfx}.exe
-    fi
-    pkg=github.com/bmflynn/cmrfetch/internal
-    buildtime=$(date -u +%Y-%m-%dT%H:%M:%SZ)
-    sha=$(git rev-parse HEAD)
-    go build \
-      -o ./build/cmrfetch.${sfx} \
-      -ldflags "-s -w -X ${pkg}.Version=${VER} -X ${pkg}.BuildTime=${buildtime} -X ${pkg}.GitSHA=${sha} --extldflags '-static'"
+    cd build
+    tar -cvzf cmrfetch_${sfx}.tar.gz $(basename ${outdir})
   )
+  rm -rf ${outdir}
 }
 
 mkdir -pv build
