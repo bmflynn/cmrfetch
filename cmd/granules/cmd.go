@@ -164,7 +164,7 @@ func init() {
 		"Polygon points are provided in counter-clockwise order. The last point should match the first point to "+
 			"close the polygon. The values are listed comma separated in longitude latitude order, "+
 			"i.e. lon1,lat1,lon2,lat2,lon3,lat3, and so on.")
-	flags.Float64Slice("bouding-box", nil, "Granules overlapping a bounding box, where the corner "+
+	flags.Float64Slice("bounding-box", nil, "Granules overlapping a bounding box, where the corner "+
 		"points are provided lon1,lat1,lon2,lat2.")
 	flags.Float64Slice("circle", nil, "Granules overlapping a circle, where the circle is defined as "+
 		"centerlon,centerlat,radius.")
@@ -248,7 +248,7 @@ func newParams(flags *pflag.FlagSet) (internal.SearchGranuleParams, error) {
 	failOnError(err)
 	params.Polygon(a)
 
-	a, err = flags.GetFloat64Slice("bouding-box")
+	a, err = flags.GetFloat64Slice("bounding-box")
 	failOnError(err)
 	params.BoundingBox(a)
 
