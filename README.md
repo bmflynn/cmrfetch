@@ -64,6 +64,12 @@ This is implemeted here via the `keywords` subcommand. My recommendtaion it to j
 searching for keywords you think may be relavent and hopefully you'll find what you are 
 looking for.
 
+## Error Handling
+There is not a lot of direct error handling with regard to the format of input parameters. 
+Instead, `cmrfetch` relies on the CMR API to return errors regarding input field/parameters.
+If there are any issue that can be clarified with client-side error handling, please file
+an issue.
+
 ## Examples
 
 1. Search for Near Real-Time Cloud-Mask Collections
