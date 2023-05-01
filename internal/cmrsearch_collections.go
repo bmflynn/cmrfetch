@@ -25,6 +25,7 @@ func newCollectionFromUMM(gj gjson.Result) Collection {
 		"revision_id":      gj.Get("meta.revision-id").String(),
 		"revision_date":    gj.Get("meta.revision-date").String(),
 		"abstract":         gj.Get("umm.Abstract").String(),
+		"data_type":        gj.Get("umm.CollectionDataType").String(),
 	}
 	instruments := []string{}
 	for _, plat := range gj.Get("umm.Platforms").Array() {
@@ -62,6 +63,7 @@ type SearchCollectionParams struct {
 	standard       bool
 	standardSet    bool
 	sortField      string
+	dataType       string
 }
 
 func NewSearchCollectionParams() SearchCollectionParams {
@@ -135,6 +137,11 @@ func (p *SearchCollectionParams) SortBy(field string) *SearchCollectionParams {
 	return p
 }
 
+func (p *SearchCollectionParams) DataType(val string) *SearchCollectionParams {
+	p.dataType = val
+	return p
+}
+
 func (p *SearchCollectionParams) build() (url.Values, error) {
 	query := url.Values{}
 	if p.keyword != "" {
@@ -196,6 +203,10 @@ func (p *SearchCollectionParams) build() (url.Values, error) {
 	if p.sortField != "" {
 		query.Set("sort_key", p.sortField)
 	}
+  if p.dataType != "" {
+		query.Set("options[collection_data_type][ignore_case]", "true")
+    query.Set("collection_data_type", p.dataType)
+  }
 	return query, nil
 }
 

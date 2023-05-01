@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"path/filepath"
 	"sync"
 	"time"
 )
@@ -17,18 +18,24 @@ func (e *FetchError) Error() string {
 	return fmt.Sprintf("fetching: %s", e.Err)
 }
 
+type FetcherFactory func() (Fetcher, error)
+
 type FetchPoolFunc = func(reqs chan DownloadRequest, concurrency int) (chan DownloadResult, error)
 
-func FetchConcurrent(reqs chan DownloadRequest, fetcher Fetcher, concurrency int) (chan DownloadResult, error) {
-	return FetchConcurrentWithContext(context.Background(), reqs, fetcher, concurrency)
+func FetchConcurrent(reqs chan DownloadRequest, fetcherFactory FetcherFactory, concurrency int) (chan DownloadResult, error) {
+	return FetchConcurrentWithContext(context.Background(), reqs, fetcherFactory, concurrency)
 }
 
-func FetchConcurrentWithContext(ctx context.Context, reqs chan DownloadRequest, fetcher Fetcher, concurrency int) (chan DownloadResult, error) {
+func FetchConcurrentWithContext(ctx context.Context, reqs chan DownloadRequest, fetcherFactory FetcherFactory, concurrency int) (chan DownloadResult, error) {
 	results := make(chan DownloadResult)
 
 	wg := &sync.WaitGroup{}
 	for i := 0; i < concurrency; i++ {
 		wg.Add(1)
+    fetcher, err := fetcherFactory()
+    if err != nil {
+      return nil, fmt.Errorf("failed to init fetcher: %w", err)
+    }
 		go downloader(ctx, wg, reqs, results, fetcher)
 	}
 
@@ -81,11 +88,12 @@ func downloader(
 		err := func() error {
 			start := time.Now()
 
-			dest, err := os.Create(zult.Path)
+			destdir, fname := filepath.Split(zult.Path)
+      dest, err := os.CreateTemp(destdir, fmt.Sprintf(".%s.*", fname))
 			if err != nil {
 				return fmt.Errorf("creating dest: %w", err)
 			}
-			defer dest.Close()
+			defer os.Remove(dest.Name())
 
 			w := &writerHasher{Writer: dest}
 			if req.ChecksumAlg != "" {
@@ -98,13 +106,20 @@ func downloader(
 			if err != nil {
 				return err
 			}
+      dest.Close()  // Close before checksumming
 			zult.Checksum = w.Checksum()
 			zult.Size = w.size
-      zult.Duration = time.Since(start)
+			zult.Duration = time.Since(start)
 
 			if zult.Checksum != req.Checksum {
 				return fmt.Errorf("got checksum %s, expected %s", zult.Checksum, req.Checksum)
 			}
+      if err := os.Rename(dest.Name(), zult.Path); err != nil {
+        return fmt.Errorf("failed to rename %s to %s: %w", dest.Name(), zult.Path, err)
+      }
+      if err := os.Chmod(zult.Path, 0o644); err != nil {
+        return fmt.Errorf("failed to update permissions on %s: %w", zult.Path, err)
+      }
 			return nil
 		}()
 

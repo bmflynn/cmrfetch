@@ -19,6 +19,7 @@ func TestSearchCollectionParams(t *testing.T) {
     Title("pat?e*n").
 	  UpdatedSince(refTime).
     GranulesAdded(TimeRange{Start: refTime}).
+    DataType("dt").
     build()
 	require.NoError(t, err)
 
@@ -30,6 +31,7 @@ func TestSearchCollectionParams(t *testing.T) {
 	require.Equal(t, "true", q.Get("options[entry_title][pattern]"))
   require.Equal(t, "1970-01-01T00:00:00Z", q.Get("updated_since"))
   require.Equal(t, "1970-01-01T00:00:00Z,", q.Get("has_granules_revised_at"))
+  require.Equal(t, "dt", q.Get("collection_data_type"))
 
   require.Equal(t, false, params.cloudHostedSet)
   q, err = params.CloudHosted(true).build()

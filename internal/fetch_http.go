@@ -6,12 +6,43 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"net/http/cookiejar"
+	"sync"
 	"time"
 
 	"github.com/jdxcode/netrc"
 )
+
+type FailedDownload struct {
+	RequestID    string
+	ResponseBody string
+	Status       string
+	URL          string
+}
+
+func newFailedDownloadError(resp *http.Response) *FailedDownload {
+	dat, err := ioutil.ReadAll(resp.Body)
+	var body string
+	if err != nil {
+		body = string(dat)
+	}
+	return &FailedDownload{
+		RequestID:    resp.Header.Get("request-id"),
+		ResponseBody: body,
+		Status:       resp.Status,
+		URL:          resp.Request.URL.String(),
+	}
+}
+
+func (e *FailedDownload) Error() string {
+	rid := e.RequestID
+	if rid == "" {
+		rid = "<unavailable>"
+	}
+	return fmt.Sprintf("%s requestid=%s", e.Status, rid)
+}
 
 // Sets basic auth on redirect if the host is in the netrc file.
 func newRedirectWithNetrcCredentials() (func(*http.Request, []*http.Request) error, error) {
@@ -23,9 +54,13 @@ func newRedirectWithNetrcCredentials() (func(*http.Request, []*http.Request) err
 	if err != nil {
 		return nil, fmt.Errorf("failed to read netrc: %w", err)
 	}
+	mu := &sync.Mutex{}
 	return func(req *http.Request, via []*http.Request) error {
 		host := req.URL.Hostname()
-		if machine := nc.Machine(host); machine != nil {
+		mu.Lock()
+		machine := nc.Machine(host)
+		mu.Unlock()
+		if machine != nil {
 			req.SetBasicAuth(machine.Get("login"), machine.Get("password"))
 		}
 		return nil
@@ -76,7 +111,9 @@ func (f *HTTPFetcher) Fetch(ctx context.Context, url string, w io.Writer) (int64
 
 	resp, err := f.client.Do(req)
 	if resp.StatusCode != http.StatusOK {
-		return 0, fmt.Errorf("server returned %s", resp.Status)
+		err = newFailedDownloadError(resp)
+		resp.Body.Close()
+		return 0, err
 	}
 	defer resp.Body.Close()
 

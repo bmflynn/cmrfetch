@@ -70,12 +70,12 @@ func doDownload(
 		}
 	}
 
-	fetcher, err := internal.NewHTTPFetcher(netrc)
-	if err != nil {
-		return fmt.Errorf("init fetcher pool: %s", err)
-	}
+  fetcherFactory := func() (internal.Fetcher, error) {
+    fetcher, err := internal.NewHTTPFetcher(netrc)
+    return fetcher.Fetch, err
+  }
 	requests := zultsToRequests(zult, destdir, clobber)
-	results, err := internal.FetchConcurrentWithContext(ctx, requests, fetcher.Fetch, concurrency)
+	results, err := internal.FetchConcurrentWithContext(ctx, requests, fetcherFactory, concurrency)
 	if err != nil {
 		return fmt.Errorf("init fetcher: %s", err)
 	}
