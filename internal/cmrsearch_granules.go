@@ -12,6 +12,8 @@ import (
 	"github.com/tidwall/gjson"
 )
 
+const notProvided = "Not provided"
+
 func joinFloats(vals []float64) string {
 	s := []string{}
 	for _, v := range vals {
@@ -87,9 +89,12 @@ func (p *SearchGranuleParams) Timerange(start time.Time, end *time.Time) *Search
 
 func (p *SearchGranuleParams) build() (url.Values, error) {
 	query := url.Values{}
+	if p.daynight != "" {
+		query.Set("day_night_flag", p.daynight)
+	}
 	if p.shortnames != nil {
 		query.Set("options[short_name][pattern]", "true")
-		query.Set("options[platform][ignore_case]", "true")
+		query.Set("options[short_name][ignore_case]", "true")
 		for _, name := range p.shortnames {
 			query.Add("short_name", name)
 		}
@@ -123,14 +128,11 @@ func (p *SearchGranuleParams) build() (url.Values, error) {
 		}
 		query.Set("circle", joinFloats(p.circle))
 	}
-	if p.daynight != "" {
-		query.Set("day_night_flag", p.daynight)
-	}
 	if len(p.boundingBox) != 0 {
 		if len(p.boundingBox) != 4 {
 			return query, fmt.Errorf("wrong number of values for bounding box")
 		}
-		query.Set("bouding_box", joinFloats(p.boundingBox))
+		query.Set("bounding_box", joinFloats(p.boundingBox))
 	}
 	if len(p.point) != 0 {
 		if len(p.point) != 4 {
@@ -179,6 +181,8 @@ func findDownloadURLs(zult gjson.Result, directAccess bool) []string {
 
 func newGranuleFromUMM(zult gjson.Result) Granule {
 	gran := Granule{}
+
+
 	gran.ConceptID = zult.Get("meta.concept-id").String()
 	gran.NativeID = zult.Get("meta.native-id").String()
 	gran.RevisionID = zult.Get("meta.revision-id").String()
@@ -191,8 +195,8 @@ func newGranuleFromUMM(zult gjson.Result) Granule {
 		)
 	}
 
-  // Not sure in which case where would be multiple infos, but it is an array so we
-  // just separate all values by new lines.
+	// Not sure in which case where would be multiple infos, but it is an array so we
+	// just separate all values by new lines.
 	for _, ar := range zult.Get("umm.DataGranule.ArchiveAndDistributionInformation").Array() {
 		size := ar.Get("SizeInBytes").Int()
 		if size != 0 {
@@ -216,17 +220,6 @@ func newGranuleFromUMM(zult gjson.Result) Granule {
 		zult.Get("umm.TemporalExtent.RangeDateTime.BeginningDateTime").String(),
 		zult.Get("umm.TemporalExtent.RangeDateTime.EndingDateTime").String(),
 	}
-  /*
-        "SpatialExtent": {
-          "HorizontalSpatialDomain": {
-            "Geometry": {
-              "GPolygons": [
-                {
-                  "Boundary": {
-                    "Points": [
-                      {
-                        "Longitude": 35.479717,
-          */
 	gran.BoundingBox = []string{}
 	for _, polygon := range zult.Get("umm.SpatialExtent.HorizontalSpatialDomain.Geometry.GPolygons").Array() {
 		points := []string{}
@@ -236,6 +229,18 @@ func newGranuleFromUMM(zult gjson.Result) Granule {
 		}
 		gran.BoundingBox = append(gran.BoundingBox, strings.Join(points, ","))
 	}
+
+  // Find the granule name, which may be in one of several sources
+  for _, elem := range zult.Get("umm.DataGranule.Identifiers").Array() {
+    if elem.Get("IdentifierType").String() == "ProducerGranuleId" {
+      gran.Name = elem.Get("Identifier").String()
+      break
+    }
+  }
+  // Subideally attempt to get the name of the first file in the archive info
+  if gran.Name == "" {
+    gran.Name = zult.Get("umm.DataGranule.ArchiveAndDistributionInformation.0.Name").String()
+  }
 
 	return gran
 }

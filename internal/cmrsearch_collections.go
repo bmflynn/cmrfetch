@@ -74,7 +74,7 @@ func (p *SearchCollectionParams) Keyword(kw string) *SearchCollectionParams {
 }
 
 func (p *SearchCollectionParams) Providers(names ...string) *SearchCollectionParams {
-	p.shortnames = names
+	p.providers = names
 	return p
 }
 

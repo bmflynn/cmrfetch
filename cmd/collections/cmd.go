@@ -73,7 +73,7 @@ var Cmd = &cobra.Command{
 	Example: `
   Search for all collections by short name prefix:
 
-    cmrfetch collections -s CLDMSK_*
+    cmrfetch collections -s "CLDMSK_*"
 
   Search for multiple collection short names:
 
