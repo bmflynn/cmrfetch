@@ -12,7 +12,21 @@ some assuptions regarding the metadata available in order to present it in a sim
 assumptions may result in unexpected results for some collections or granules. If there are issues with 
 metadata for a specific collection feel free to file an [issue](https://github.com/bmflynn/cmrfetch/issues).
 
-## Download Authentication
+## Search and Discovery
+`cmrfetch` allows you to search for product collections using keywords, titles, shortnames, 
+platform, instrument, etc.... To keep search sizes reasonable, at least one major search filter
+must be specified. See `cmrfetch collections --help` for more information.
+
+You can also search for collection granule metadata directly, however, because the set of
+available granules is quite large you will get best results by being as specific with your
+filtering as you can. 
+
+## Downloading
+`cmrfetch` will also download resulting granules. Currently, only granules hosted via HTTP
+can be downloaded, but this may change to additionally support S3 ingest for DIRECT ACCESS
+urls.
+
+### Download Authentication
 Most, if not all, data providers hosting granules require NASA Earthdata authentication,
 ([register](https://urs.earthdata.nasa.gov/users/new)). 
 
