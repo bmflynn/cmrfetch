@@ -124,5 +124,23 @@ an issue.
    ```
    Existing granules will be skipped.
    
-
+3. View a specific granule, with more detail:
+   ```
+   -c C1964798938-LAADS -f CLDMSK_L2_VIIRS_NOAA20.A2023091.0006.001.2023091131339.nc -o long
+   ┌─────────────────────┬───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────   ────────────────────────┐
+   │ name                │ CLDMSK_L2_VIIRS_NOAA20.A2023091.0006.001.2023091131339.nc                                                                                             │
+   │ size                │ 52.2 MB                                                                                                                                               │
+   │ checksum            │ fb792a683115ef192a9e33b0dd6b649c                                                                                                                      │
+   │ checksum_alg        │ MD5                                                                                                                                                   │
+   │ download_url        │ https://ladsweb.modaps.eosdis.nasa.gov/archive/allData/5110/CLDMSK_L2_VIIRS_NOAA20/2023/091/CLDMSK_L2_VIIRS_NOAA20.A2023091.0006.001.2023091131339.nc │
+   │ native_id           │ LAADS:7485481337                                                                                                                                      │
+   │ revision_id         │ 1                                                                                                                                                     │
+   │ concept_id          │ G2647214816-LAADS                                                                                                                                     │
+   │ collection          │ CLDMSK_L2_VIIRS_NOAA20/1                                                                                                                              │
+   │ download_direct_url │ s3://prod-lads/CLDMSK_L2_VIIRS_NOAA20/CLDMSK_L2_VIIRS_NOAA20.A2023091.0006.001.2023091131339.nc                                                       │
+   │ daynight            │ Day                                                                                                                                                   │
+   │ timerange           │ [2023-04-01T00:06:00.000Z 2023-04-01T00:12:00.000Z]                                                                                                   │
+   │ boundingbox         │ [-170.845001,-41.507393,-135.764923,-36.170902,-144.453003,-16.412685,-172.955856,-20.74267,-170.845001,-41.507393]                                   │
+   └─────────────────────┴───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+   ```
    
