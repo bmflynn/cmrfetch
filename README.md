@@ -1,5 +1,6 @@
 # cmrfetch
 ![Build & Test](https://github.com/bmflynn/cmrfetch/actions/workflows/go.yml/badge.svg)
+[![CodeQL](https://github.com/bmflynn/cmrfetch/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/bmflynn/cmrfetch/actions/workflows/github-code-scanning/codeql)
 [![Go Report Card](https://goreportcard.com/badge/github.com/bmflynn/cmrfetch)](https://goreportcard.com/report/github.com/bmflynn/cmrfetch)
 
 CLI tool for searching NASA Earthdata CMR collection metadata and downloading granules.
