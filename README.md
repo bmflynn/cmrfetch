@@ -98,9 +98,13 @@ looking for.
    │ CLDMSK_L2_VIIRS_NOAA20.A2023090.2354.001.2023091121321.nc │ 50.2 MB │ LAADS:7485462762 │ G2647210867-LAADS │ 1           │
    └───────────────────────────────────────────────────────────┴─────────┴──────────────────┴───────────────────┴─────────────┘
    ```
-   Yep, looks good, let's go ahead and download those results to `./downloads`:
+   Yep, looks good, let's go ahead and download those results to `./downloads`. By default 4 files 
+   are downloaded concurrentlye (see `--download-concurrency`).
    ```
    $> cmrfetch granules -c C1964798938-LAADS -t 2023-04-01,2023-04-01T00:06:00Z --download ./downloads
+   2023/05/01 13:49:35 fetched https://ladsweb.modaps.eosdis.nasa.gov/archive/allData/5110/CLDMSK_L2_VIIRS_NOAA20/2023/091/CLDMSK_L2_VIIRS_NOAA20.A2023091.0006.001.2023091131339.nc in 6.2s(64.1 Mb/s)
+   2023/05/01 13:49:36 fetched https://ladsweb.modaps.eosdis.nasa.gov/archive/allData/5110/CLDMSK_L2_VIIRS_NOAA20/2023/090/CLDMSK_L2_VIIRS_NOAA20.A2023090.2354.001.2023091121321.nc in 6.5s(59.4 Mb/s)
+   2023/05/01 13:49:46 fetched https://ladsweb.modaps.eosdis.nasa.gov/archive/allData/5110/CLDMSK_L2_VIIRS_NOAA20/2023/091/CLDMSK_L2_VIIRS_NOAA20.A2023091.0000.001.2023091131336.nc in 17.1s(19.3 Mb/s)
    ```
    Existing granules will be skipped.
    
