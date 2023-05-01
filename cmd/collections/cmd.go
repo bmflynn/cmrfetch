@@ -125,7 +125,6 @@ var Cmd = &cobra.Command{
 
 		return do(api, params, writer)
 	},
-	SilenceUsage: true,
 }
 
 func haveFilterFlags(flags *pflag.FlagSet) bool {

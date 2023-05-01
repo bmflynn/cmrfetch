@@ -15,9 +15,10 @@ func TestGranuleSearchParams(t *testing.T) {
 	params := NewSearchGranuleParams()
 	q, err := params.
 		DayNightFlag("day").
-		ShortName("s1", "s2").
-		Collection("c1", "c2").
-		NativeID("n1", "n2").
+		ShortNames("s1", "s2").
+    Filenames("f1", "f2").
+		Collections("c1", "c2").
+		NativeIDs("n1", "n2").
 		BoundingBox([]float64{1, 2, 3, 4}).
 		Point([]float64{1, 2, 3, 4}).
 		Circle([]float64{1.1, 2.2, 3.3}).
@@ -28,6 +29,7 @@ func TestGranuleSearchParams(t *testing.T) {
 
 	require.Equal(t, "day", q.Get("day_night_flag"))
 	require.Equal(t, []string{"s1", "s2"}, q["short_name"])
+	require.Equal(t, []string{"f1", "f2"}, q["readable_granule_name"])
 	require.Equal(t, []string{"c1", "c2"}, q["collection_concept_id"])
 	require.Equal(t, []string{"n1", "n2"}, q["native_id"])
 	require.Equal(t, "1,2,3,4", q.Get("bounding_box"))

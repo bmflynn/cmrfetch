@@ -14,8 +14,8 @@ import (
 )
 
 var (
-	timerange     internal.TimeRangeValue
-	validFields   = []string{
+	timerange   internal.TimeRangeValue
+	validFields = []string{
 		"name", "size", "checksum", "checksum_alg", "download_url", "native_id", "revision_id",
 		"concept_id", "collection", "download_direct_url", "daynight", "timerange", "boundingbox",
 	}
@@ -58,22 +58,27 @@ NASA Earthdata Authentication
     https://wiki.earthdata.nasa.gov/display/EL/How+To+Access+Data+With+cURL+And+Wget
 
 `,
-  Example: `
+	Example: `
   Search for all products with a collection short name prefix:
 
-    cmrfetch granules -s CLDMSK_*
+    cmrfetch granules -s "CLDMSK_*"
 
   Search for multiple collection short names:
 
     cmrfetch granules -s CLDMSK_L2_VIIRS_SNPP -s CLDMSK_L2_VIIRS_NOAA20,CLDMSK_L2_MODIS_Aqua
+
+  Search for granules by filename:
+
+    cmrfetch granules -c C1964798938-LAADS -f CLDMSK_L2_VIIRS_NOAA20.A2023115.0142.001.2023115140055.nc 
 `,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		flags := cmd.Flags()
 
 		if !flags.Changed("collection") &&
 			!flags.Changed("nativeid") &&
-			!flags.Changed("shortname") {
-			return fmt.Errorf("at least one of --collection, --shortname, or --nativeid is required")
+			!flags.Changed("shortname") &&
+			!flags.Changed("filename") {
+			return fmt.Errorf("at least one of --collection, --shortname, --nativeid, or --filename is required")
 		}
 
 		netrc, err := flags.GetBool("netrc")
@@ -100,6 +105,10 @@ NASA Earthdata Authentication
 			}
 		}
 
+    if flags.Changed("filename") && !flags.Changed("collection") {
+      return fmt.Errorf("--collection is required when using --filename")
+    }
+
 		params, err := newParams(flags)
 		if err != nil {
 			return err
@@ -112,22 +121,10 @@ NASA Earthdata Authentication
 
 		api := internal.NewCMRSearchAPI(logger)
 
-		var writer outputWriter
-		switch output {
-		case "tables":
-			writer = tablesWriter
-		case "json":
-			writer = jsonWriter
-		case "csv":
-			writer = csvWriter
-		default:
-			return fmt.Errorf("--output must be one of tables, json, csv")
-		}
-
 		if destdir != "" {
 			err = doDownload(context.TODO(), api, params, destdir, netrc, clobber, yes, verbose, concurrency)
 		} else {
-			err = do(api, params, writer, fields, yes)
+			err = do(api, params, output, fields, yes)
 		}
 		if err != nil {
 			log.Fatalf("failed! %s", err)
@@ -158,6 +155,9 @@ func init() {
 	flags.StringSliceP("nativeid", "N", nil, "granule native id")
 	flags.StringSliceP("collection", "c", nil, "Collection concept id")
 	flags.StringSliceP("shortname", "s", nil, "Collection short name")
+	flags.StringSliceP("filename", "f", nil,
+		"Filter on an approximation of the filename. Must be sepcified with --collection. In CMR metadata "+
+      "terms this searches the granule ur and producer granule id.")
 	flags.StringP("daynight", "D", "", "Day or night grnaules. One of day, night, both, or unspecified")
 	flags.VarP(&timerange, "timerange", "t", "Timerange as <start>,[<end>]")
 	flags.Float64Slice("polygon", nil,
@@ -170,15 +170,35 @@ func init() {
 		"centerlon,centerlat,radius.")
 	flags.Float64Slice("point", nil, "Granules containing point lon,lat.")
 	flags.StringSlice("fields", defaultFields,
-		"Fields to include in output. "+strings.Join(validFields, ", "))
-
-	flags.StringP("output", "o", "tables", "Output format. One of tables, json, or, csv")
+		"Fields to include in output; ignored for --output=short. "+strings.Join(validFields, ", "))
+	flags.StringP("output", "o", "short", "Output format. One of short, long, json, or, csv")
 }
 
-func do(api *internal.CMRSearchAPI, params internal.SearchGranuleParams, writer outputWriter, fields []string, yes bool) error {
+func do(api *internal.CMRSearchAPI, params internal.SearchGranuleParams, writerName string, fields []string, yes bool) error {
+	var writer outputWriter
+	switch writerName {
+	case "short":
+		writer = shortWriter
+	case "long":
+		writer = tablesWriter
+	case "json":
+		writer = jsonWriter
+	case "csv":
+		writer = csvWriter
+	default:
+		return fmt.Errorf("--output must be one of short, long, json, csv")
+	}
+
 	zult, err := api.SearchGranules(context.Background(), params)
 	if err != nil {
 		return err
+	}
+
+	if writerName == "short" && zult.Hits() > 1000 {
+		log.Printf(
+			"WARNING: short output renders in memory and you have more than 1000 results. " +
+				"Consider limiting your search to reduce the number of results or use CSV or json " +
+				"output.")
 	}
 
 	return writer(zult, os.Stdout, fields)
@@ -196,20 +216,31 @@ func newParams(flags *pflag.FlagSet) (internal.SearchGranuleParams, error) {
 		params.DayNightFlag(st)
 	}
 
-	sa, err := flags.GetStringSlice("collection")
-	failOnError(err)
-	params.Collection(sa...)
+	if flags.Changed("collection") {
+		sa, err := flags.GetStringSlice("collection")
+		failOnError(err)
+		params.Collections(sa...)
+	}
 
-	sa, err = flags.GetStringSlice("nativeid")
-	failOnError(err)
-	params.NativeID(sa...)
+	if flags.Changed("nativeid") {
+		sa, err := flags.GetStringSlice("nativeid")
+		failOnError(err)
+		params.NativeIDs(sa...)
+	}
 
-	sa, err = flags.GetStringSlice("shortname")
-	failOnError(err)
-	params.ShortName(sa...)
+	if flags.Changed("shortname") {
+		sa, err := flags.GetStringSlice("shortname")
+		failOnError(err)
+		params.ShortNames(sa...)
+	}
+
+	if flags.Changed("filename") {
+		sa, err := flags.GetStringSlice("filename")
+		failOnError(err)
+		params.Filenames(sa...)
+	}
 
 	if flags.Changed("timerange") {
-		failOnError(err)
 		params.Timerange(*timerange.Start, timerange.End)
 	}
 

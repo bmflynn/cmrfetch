@@ -16,6 +16,30 @@ func longWriter(zult internal.GranuleResult, w io.Writer, fields []string) error
 	return nil
 }
 
+func shortWriter(zult internal.GranuleResult, w io.Writer, _ []string) error {
+  fields := []string{"name", "size", "native_id", "concept_id", "revision_id"}
+	t := table.NewWriter()
+	t.SetOutputMirror(w)
+	t.SetStyle(table.StyleLight)
+	header := table.Row{}
+	for _, name := range fields {
+		header = append(header, name)
+	}
+	t.AppendHeader(header)
+
+	for granule := range zult.Ch {
+		dat := granuleToMap(granule, fields)
+		row := table.Row{}
+		for _, field := range fields {
+			row = append(row, dat[field])
+		}
+		t.AppendRow(row)
+	}
+	t.Render()
+
+	return zult.Err()
+}
+
 func tablesWriter(zult internal.GranuleResult, w io.Writer, fields []string) error {
 	for granule := range zult.Ch {
 		t := table.NewWriter()

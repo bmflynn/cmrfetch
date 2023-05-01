@@ -40,6 +40,7 @@ Project: https://github.com/bmflynn/cmrfetch
   CompletionOptions: cobra.CompletionOptions{
     HiddenDefaultCmd: true,
   },
+  SilenceUsage: true,
 }
 
 func init() {

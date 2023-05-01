@@ -26,6 +26,7 @@ func joinFloats(vals []float64) string {
 type SearchGranuleParams struct {
 	daynight      string
 	shortnames    []string
+	filenames     []string
 	collectionIDs []string
 	nativeIDs     []string
 	boundingBox   []float64
@@ -46,17 +47,22 @@ func (p *SearchGranuleParams) DayNightFlag(name string) *SearchGranuleParams {
 	return p
 }
 
-func (p *SearchGranuleParams) ShortName(name ...string) *SearchGranuleParams {
+func (p *SearchGranuleParams) ShortNames(name ...string) *SearchGranuleParams {
 	p.shortnames = name
 	return p
 }
 
-func (p *SearchGranuleParams) Collection(id ...string) *SearchGranuleParams {
+func (p *SearchGranuleParams) Filenames(name ...string) *SearchGranuleParams {
+	p.filenames = name
+	return p
+}
+
+func (p *SearchGranuleParams) Collections(id ...string) *SearchGranuleParams {
 	p.collectionIDs = id
 	return p
 }
 
-func (p *SearchGranuleParams) NativeID(id ...string) *SearchGranuleParams {
+func (p *SearchGranuleParams) NativeIDs(id ...string) *SearchGranuleParams {
 	p.nativeIDs = id
 	return p
 }
@@ -97,6 +103,11 @@ func (p *SearchGranuleParams) build() (url.Values, error) {
 		query.Set("options[short_name][ignore_case]", "true")
 		for _, name := range p.shortnames {
 			query.Add("short_name", name)
+		}
+	}
+	if p.filenames != nil {
+		for _, name := range p.filenames {
+			query.Add("readable_granule_name", name)
 		}
 	}
 	if p.collectionIDs != nil {
@@ -182,7 +193,6 @@ func findDownloadURLs(zult gjson.Result, directAccess bool) []string {
 func newGranuleFromUMM(zult gjson.Result) Granule {
 	gran := Granule{}
 
-
 	gran.ConceptID = zult.Get("meta.concept-id").String()
 	gran.NativeID = zult.Get("meta.native-id").String()
 	gran.RevisionID = zult.Get("meta.revision-id").String()
@@ -230,17 +240,17 @@ func newGranuleFromUMM(zult gjson.Result) Granule {
 		gran.BoundingBox = append(gran.BoundingBox, strings.Join(points, ","))
 	}
 
-  // Find the granule name, which may be in one of several sources
-  for _, elem := range zult.Get("umm.DataGranule.Identifiers").Array() {
-    if elem.Get("IdentifierType").String() == "ProducerGranuleId" {
-      gran.Name = elem.Get("Identifier").String()
-      break
-    }
-  }
-  // Subideally attempt to get the name of the first file in the archive info
-  if gran.Name == "" {
-    gran.Name = zult.Get("umm.DataGranule.ArchiveAndDistributionInformation.0.Name").String()
-  }
+	// Find the granule name, which may be in one of several sources
+	for _, elem := range zult.Get("umm.DataGranule.Identifiers").Array() {
+		if elem.Get("IdentifierType").String() == "ProducerGranuleId" {
+			gran.Name = elem.Get("Identifier").String()
+			break
+		}
+	}
+	// Subideally attempt to get the name of the first file in the archive info
+	if gran.Name == "" {
+		gran.Name = zult.Get("umm.DataGranule.ArchiveAndDistributionInformation.0.Name").String()
+	}
 
 	return gran
 }
