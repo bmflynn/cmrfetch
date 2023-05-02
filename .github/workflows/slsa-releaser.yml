@@ -8,8 +8,6 @@ on:
 permissions: read-all
 
 jobs:
-  # Generate ldflags dynamically.
-  # Optional: only needed for ldflags.
   args:
     runs-on: ubuntu-latest
     outputs:
@@ -19,7 +17,7 @@ jobs:
       tree-state: ${{ steps.ldflags.outputs.tree-state }}
     steps:
       - id: checkout
-        uses: actions/checkout@ec3a7ce113134d7a93b817d10a8272cb61118579 # tag=v2.3.4
+        uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # tag=v3.5.2
         with:
           fetch-depth: 0
       - id: ldflags
