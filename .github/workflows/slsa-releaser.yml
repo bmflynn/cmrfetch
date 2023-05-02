@@ -32,6 +32,7 @@ jobs:
       id-token: write # To sign the provenance.
       contents: write # To upload assets to release.
       actions: read # To read the workflow path.
+    needs: [args]
     strategy:
       matrix:
         os:

@@ -87,7 +87,7 @@ an issue.
 
 1. Search for Near Real-Time Cloud-Mask Collections
    ```
-   $> cmrfetch -d nrt -s "cldmsk*"
+   $> cmrfetch collections -d nrt -s "cldmsk*"
    ┌────────────────────────────┬─────────┬───────────────────┬─────────────┬──────────┐
    │ SHORTNAME                  │ VERSION │ CONCEPT           │ REVISION_ID │ PROVIDER │
    ├────────────────────────────┼─────────┼───────────────────┼─────────────┼──────────┤
