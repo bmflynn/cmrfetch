@@ -147,6 +147,14 @@ an issue.
    └─────────────────────┴───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
    ```
 
+# SLSA
+This repository uses the [SLSA](https://slsa.dev/) Github [Action](https://github.com/slsa-framework/slsa-github-generator/blob/main/internal/builders/go/README.md#multi-platform-builds) 
+to provide Build [Level-3](https://slsa.dev/spec/v1.0/levels#build-l3) provenance.
+
+The signed provenance files, or attestation, artifacts are available along with the release binaries.
+See [slsa-verifier](https://github.com/slsa-framework/slsa-verifier) for instruction on how to 
+verify the artifacts.
+
 References:
 
   * [NASA Eathdata](https://earthdata.nasa.gov)
