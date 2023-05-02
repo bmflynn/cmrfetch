@@ -1,0 +1,12 @@
+version: 1
+env:
+  - GO111MODULE=on
+  - CGO_ENABLED=0
+goos: darwin 
+goarch: amd64
+binary: cmrfetch-{{ .Os }}-{{ .Arch }}
+ldflags:
+  - "-X github.com/bmflynn/cmrfetch/internal.Version={{ .Env.VERSION }}"
+  - "-X github.com/bmflynn/cmrfetch/internal.Commit={{ .Env.COMMIT }}"
+  - "-X github.com/bmflynn/cmrfetch/internal.CommitDate={{ .Env.COMMIT_DATE }}"
+  - "-X github.com/bmflynn/cmrfetch/internal.TreeState={{ .Env.TREE_STATE }}"

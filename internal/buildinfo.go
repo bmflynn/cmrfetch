@@ -1,7 +1,9 @@
 package internal
 
+// Set via ldflags
 var (
-	Version   = "??"
-	BuildTime = "??"
-	GitSHA    = "??"
+	Version    = "??"
+	Commit     = "??"
+	CommitDate = "??"
+	TreeState  = "??"
 )
