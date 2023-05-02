@@ -13,7 +13,6 @@ import (
 )
 
 func TestCMRSearchAPI(t *testing.T) {
-
 	newServer := func(t *testing.T, body string, status int, hits string) (*httptest.Server, string) {
 		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Type", "application/json")

@@ -22,7 +22,7 @@ func (e *CMRError) Error() string {
 		return e.Err.Error()
 	}
 	return fmt.Sprintf(
-    "%s; request-id=%s", strings.Join(e.Errors, "; "), e.RequestID)
+		"%s; request-id=%s", strings.Join(e.Errors, "; "), e.RequestID)
 }
 
 func encodeTime(t time.Time) string {
