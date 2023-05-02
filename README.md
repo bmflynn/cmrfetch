@@ -1,8 +1,8 @@
 # cmrfetch
 [![Go](https://github.com/bmflynn/cmrfetch/actions/workflows/go.yml/badge.svg)](https://github.com/bmflynn/cmrfetch/actions/workflows/go.yml)
 [![CodeQL](https://github.com/bmflynn/cmrfetch/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/bmflynn/cmrfetch/actions/workflows/github-code-scanning/codeql)
-[![Go Report Card](https://goreportcard.com/badge/github.com/bmflynn/cmrfetch)](https://goreportcard.com/report/github.com/bmflynn/cmrfetch)
-[![Coverage Status](https://coveralls.io/repos/github/bmflynn/cmrfetch/badge.svg)](https://coveralls.io/github/bmflynn/cmrfetch)
+[![Go Report Card](https://goreportcard.com/badge/github.com/bmflynn/cmrfetch?branch=main&kill_cache=1)](https://goreportcard.com/report/github.com/bmflynn/cmrfetch)
+[![Coverage Status](https://coveralls.io/repos/github/bmflynn/cmrfetch/badge.svg?branch=main&kill_cache=1)](https://coveralls.io/github/bmflynn/cmrfetch)
 
 CLI tool for searching NASA Earthdata CMR collection metadata and downloading granules.
 
