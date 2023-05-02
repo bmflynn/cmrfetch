@@ -24,7 +24,7 @@ func (api *CMRSearchAPI) SearchFacets(ctx context.Context, val string, types []s
 
 	zult, err := api.Get(ctx, url)
 	if err != nil {
-		return ScrollResult[Facet]{}, err
+		return ScrollResult[Facet]{}, nil
 	}
 
 	gzult := newScrollResult[Facet]()

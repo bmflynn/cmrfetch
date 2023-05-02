@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"strings"
 	"sync"
 
 	"github.com/tidwall/gjson"
@@ -143,14 +144,19 @@ func (api *CMRSearchAPI) Get(ctx context.Context, url string) (ScrollResult[gjso
 }
 
 func (api *CMRSearchAPI) newCMRError(resp *http.Response) error {
-	reqid := resp.Header.Get("cmr-request-id")
-	body, _ := ioutil.ReadAll(resp.Body)
-	cmrErr := &CMRError{}
-	if err := json.Unmarshal(body, &cmrErr); err == nil {
-		api.debug("failed to unmarshal errors: %s: %s", err, body)
-		cmrErr.RequestID = reqid
-		return cmrErr
+	cmrErr := &CMRError{
+		Status:    resp.Status,
+		RequestID: resp.Header.Get("cmr-request-id"),
 	}
-	cmrErr.Err = fmt.Errorf("%s; request-id=%s", resp.Status, reqid)
+  // attempt to unmarshal what we think errors from CMR should look like
+	body, _ := ioutil.ReadAll(resp.Body)
+	errs := struct {
+		Errors []string `json:"errors"`
+	}{}
+	if err := json.Unmarshal(body, &errs); err == nil {
+		cmrErr.Err = fmt.Errorf("%s", strings.Join(errs.Errors, "; "))
+	} else {
+		api.debug("failed to unmarshal errors: %s: %s", err, body)
+	}
 	return cmrErr
 }

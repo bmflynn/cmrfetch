@@ -15,6 +15,8 @@ import (
 	"github.com/jdxcode/netrc"
 )
 
+var defaultNetrcFinder = findNetrc
+
 type FailedDownload struct {
 	RequestID    string
 	ResponseBody string
@@ -23,16 +25,20 @@ type FailedDownload struct {
 }
 
 func newFailedDownloadError(resp *http.Response) *FailedDownload {
-	dat, err := ioutil.ReadAll(resp.Body)
 	var body string
-	if err != nil {
+	dat, err := ioutil.ReadAll(resp.Body)
+	if err == nil {
 		body = string(dat)
+	}
+	url := ""
+	if resp.Request != nil {
+		url = resp.Request.URL.String()
 	}
 	return &FailedDownload{
 		RequestID:    resp.Header.Get("request-id"),
 		ResponseBody: body,
 		Status:       resp.Status,
-		URL:          resp.Request.URL.String(),
+		URL:          url,
 	}
 }
 
@@ -46,7 +52,7 @@ func (e *FailedDownload) Error() string {
 
 // Sets basic auth on redirect if the host is in the netrc file.
 func newRedirectWithNetrcCredentials() (func(*http.Request, []*http.Request) error, error) {
-	fpath, err := findNetrc()
+	fpath, err := defaultNetrcFinder()
 	if err != nil {
 		return nil, err
 	}

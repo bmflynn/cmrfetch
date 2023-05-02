@@ -57,7 +57,7 @@ func TestCMRSearchAPI(t *testing.T) {
 
 			var cmrErr *CMRError
 			require.ErrorAs(t, zult.Err(), &cmrErr, "Expected CMRError")
-			require.Equal(t, []string{"Your request is borked"}, cmrErr.Errors)
+      require.Contains(t, cmrErr.Error(), "Your request is borked")
 		})
 
 		t.Run("bad hits is error", func(t *testing.T) {

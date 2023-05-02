@@ -2,7 +2,6 @@ package internal
 
 import (
 	"fmt"
-	"strings"
 	"time"
 )
 
@@ -13,16 +12,12 @@ type TimeRange struct {
 
 type CMRError struct {
 	RequestID string
-	Errors    []string `json:"errors"`
+	Status    string
 	Err       error
 }
 
 func (e *CMRError) Error() string {
-	if e.Err != nil {
-		return e.Err.Error()
-	}
-	return fmt.Sprintf(
-		"%s; request-id=%s", strings.Join(e.Errors, "; "), e.RequestID)
+	return fmt.Sprintf("%s; error=%s; request-id=%s", e.Status, e.Err, e.RequestID)
 }
 
 func encodeTime(t time.Time) string {

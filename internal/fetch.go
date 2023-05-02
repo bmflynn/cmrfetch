@@ -18,7 +18,7 @@ import (
 
 type Fetcher func(ctx context.Context, url string, w io.Writer) (int64, error)
 
-func ParseChecksum(s string) (string, string, error) {
+func SplitChecksum(s string) (string, string, error) {
 	alg, val, ok := strings.Cut(strings.ToLower(s), ":")
 	if !ok {
 		return "", "", fmt.Errorf("expected <alg>:<val>, got %s", s)
@@ -33,7 +33,7 @@ func newHash(alg string) (hash.Hash, error) {
 		hash = md5.New()
 	case "sha256":
 		hash = sha256.New()
-	case "shas512":
+	case "sha512":
 		hash = sha512.New()
 	default:
 		return nil, fmt.Errorf("expected one of md5, sha256, sha512, got %s", alg)
