@@ -31,7 +31,7 @@ func (api *CMRSearchAPI) SearchFacets(ctx context.Context, val string, types []s
 	gzult.hits = zult.hits
 
 	go func() {
-		defer gzult.Close()
+		defer close(gzult.Ch)
 		for gj := range zult.Ch {
 			gzult.Ch <- Facet{
 				Score:  gj.Get("score").Float(),

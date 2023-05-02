@@ -137,7 +137,7 @@ func haveFilterFlags(flags *pflag.FlagSet) bool {
 	return false
 }
 
-func newParams(flags *pflag.FlagSet) (internal.SearchCollectionParams, error) {
+func newParams(flags *pflag.FlagSet) (*internal.SearchCollectionParams, error) {
 	params := internal.NewSearchCollectionParams()
 
 	s, err := flags.GetString("keyword")
@@ -198,7 +198,7 @@ func newParams(flags *pflag.FlagSet) (internal.SearchCollectionParams, error) {
 	return params, nil
 }
 
-func do(api *internal.CMRSearchAPI, params internal.SearchCollectionParams, writer outputWriter) error {
+func do(api *internal.CMRSearchAPI, params *internal.SearchCollectionParams, writer outputWriter) error {
 	zult, err := api.SearchCollections(context.Background(), params)
 	if err != nil {
 		return err

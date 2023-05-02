@@ -1,9 +1,7 @@
 package internal
 
 import (
-	"encoding/json"
 	"fmt"
-	"io"
 	"strings"
 	"time"
 )
@@ -13,25 +11,18 @@ type TimeRange struct {
 	End   *time.Time
 }
 
-type UMMErrors struct {
-	Errors []string `json:"errors"`
-	Err    error
+type CMRError struct {
+	RequestID string
+	Errors    []string `json:"errors"`
+	Err       error
 }
 
-func (e *UMMErrors) Error() string {
+func (e *CMRError) Error() string {
 	if e.Err != nil {
 		return e.Err.Error()
 	}
-	return strings.Join(e.Errors, ";")
-}
-
-func newUMMError(r io.Reader) error {
-	errs := &UMMErrors{}
-	err := json.NewDecoder(r).Decode(&errs)
-	if err != nil {
-		errs.Err = fmt.Errorf("failed to decode error")
-	}
-	return errs
+	return fmt.Sprintf(
+    "%s; request-id=%s", strings.Join(e.Errors, "; "), e.RequestID)
 }
 
 func encodeTime(t time.Time) string {

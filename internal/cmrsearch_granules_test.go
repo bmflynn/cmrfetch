@@ -1,8 +1,12 @@
 package internal
 
 import (
+	"context"
 	"fmt"
 	"io/ioutil"
+	"log"
+	"net/http"
+	"net/http/httptest"
 	"testing"
 	"time"
 
@@ -124,5 +128,57 @@ func Test_newGranuleFromUMM(t *testing.T) {
 		require.Equal(t, []string{
 			"-131.310653687,66.963340759,-92.430793762,55.710681915,-37.703670502,63.907997131,-4.32655859,82.950004578,-131.310653687,66.963340759",
 		}, gran.BoundingBox)
+	})
+}
+
+func TestSearchGranules(t *testing.T) {
+	newServer := func(t *testing.T, body string, status int, hits string) func() {
+		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Content-Type", "application/json")
+			if hits != "" {
+				w.Header().Set("cmr-hits", hits)
+			}
+			w.WriteHeader(status)
+			w.Write([]byte(body))
+		}))
+		url := fmt.Sprintf("http://%s", ts.Listener.Addr())
+		origURL := defaultCMRURL
+		defaultCMRSearchURL = url
+		return func() {
+			defaultCMRSearchURL = origURL
+			ts.Close()
+		}
+	}
+
+	doGet := func(t *testing.T, params *SearchGranuleParams) ScrollResult[Granule] {
+		t.Helper()
+
+		api := NewCMRSearchAPI(log.Default())
+		// make sure we're not waiting long
+		zult, err := api.SearchGranules(context.Background(), params)
+		require.NoError(t, err)
+
+		return zult
+	}
+
+	t.Run("get", func(t *testing.T) {
+		dat, err := ioutil.ReadFile("testdata/aerdt_granules.umm_json")
+		require.NoError(t, err)
+		require.True(t, gjson.Valid(string(dat)))
+
+		cleanup := newServer(t, string(dat), http.StatusOK, "1880")
+		defer cleanup()
+
+		zult := doGet(t, NewSearchGranuleParams())
+		require.NoError(t, zult.Err())
+		require.Equal(t, 1880, zult.Hits())
+
+		granules := []Granule{}
+		for g := range zult.Ch {
+			granules = append(granules, g)
+		}
+
+		require.NoError(t, zult.Err())
+		require.Len(t, granules, 10)
 	})
 }

@@ -66,8 +66,8 @@ type SearchCollectionParams struct {
 	dataType       string
 }
 
-func NewSearchCollectionParams() SearchCollectionParams {
-	return SearchCollectionParams{}
+func NewSearchCollectionParams() *SearchCollectionParams {
+	return &SearchCollectionParams{}
 }
 
 func (p *SearchCollectionParams) Keyword(kw string) *SearchCollectionParams {
@@ -210,7 +210,7 @@ func (p *SearchCollectionParams) build() (url.Values, error) {
 	return query, nil
 }
 
-func (api *CMRSearchAPI) SearchCollections(ctx context.Context, params SearchCollectionParams) (ScrollResult[Collection], error) {
+func (api *CMRSearchAPI) SearchCollections(ctx context.Context, params *SearchCollectionParams) (ScrollResult[Collection], error) {
 	query, err := params.build()
 	if err != nil {
 		return ScrollResult[Collection]{}, err
@@ -227,7 +227,7 @@ func (api *CMRSearchAPI) SearchCollections(ctx context.Context, params SearchCol
 	gzult.hits = zult.hits
 
 	go func() {
-		defer gzult.Close()
+		defer close(gzult.Ch)
 		for gj := range zult.Ch {
 			gzult.Ch <- newCollectionFromUMM(gj)
 		}

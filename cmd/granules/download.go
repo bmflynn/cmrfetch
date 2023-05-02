@@ -41,7 +41,7 @@ func zultsToRequests(granules internal.GranuleResult, destdir string, clobber bo
 func doDownload(
 	ctx context.Context,
 	api *internal.CMRSearchAPI,
-	params internal.SearchGranuleParams,
+	params *internal.SearchGranuleParams,
 	destdir string,
 	netrc, clobber, yes, verbose bool,
 	concurrency int,

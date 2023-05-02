@@ -174,7 +174,7 @@ func init() {
 	flags.StringP("output", "o", "short", "Output format. One of short, long, json, or, csv")
 }
 
-func do(api *internal.CMRSearchAPI, params internal.SearchGranuleParams, writerName string, fields []string, yes bool) error {
+func do(api *internal.CMRSearchAPI, params *internal.SearchGranuleParams, writerName string, fields []string, yes bool) error {
 	var writer outputWriter
 	switch writerName {
 	case "short":
@@ -204,8 +204,8 @@ func do(api *internal.CMRSearchAPI, params internal.SearchGranuleParams, writerN
 	return writer(zult, os.Stdout, fields)
 }
 
-func newParams(flags *pflag.FlagSet) (internal.SearchGranuleParams, error) {
-	params := internal.SearchGranuleParams{}
+func newParams(flags *pflag.FlagSet) (*internal.SearchGranuleParams, error) {
+	params := &internal.SearchGranuleParams{}
 
 	if flags.Changed("daynight") {
 		st, err := flags.GetString("daynight")

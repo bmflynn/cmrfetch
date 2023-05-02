@@ -38,8 +38,8 @@ type SearchGranuleParams struct {
 	timerangeEnd   *time.Time
 }
 
-func NewSearchGranuleParams() SearchGranuleParams {
-	return SearchGranuleParams{}
+func NewSearchGranuleParams() *SearchGranuleParams {
+	return &SearchGranuleParams{}
 }
 
 func (p *SearchGranuleParams) DayNightFlag(name string) *SearchGranuleParams {
@@ -255,7 +255,7 @@ func newGranuleFromUMM(zult gjson.Result) Granule {
 	return gran
 }
 
-func (api *CMRSearchAPI) SearchGranules(ctx context.Context, params SearchGranuleParams) (ScrollResult[Granule], error) {
+func (api *CMRSearchAPI) SearchGranules(ctx context.Context, params *SearchGranuleParams) (ScrollResult[Granule], error) {
 	query, err := params.build()
 	if err != nil {
 		return ScrollResult[Granule]{}, err
@@ -269,10 +269,11 @@ func (api *CMRSearchAPI) SearchGranules(ctx context.Context, params SearchGranul
 	}
 
 	gzult := newScrollResult[Granule]()
+	// hits is set before Get returns
 	gzult.hits = zult.hits
 
 	go func() {
-		defer gzult.Close()
+		defer close(gzult.Ch)
 		for gj := range zult.Ch {
 			gzult.Ch <- newGranuleFromUMM(gj)
 		}
