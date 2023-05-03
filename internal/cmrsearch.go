@@ -130,7 +130,6 @@ func (api *CMRSearchAPI) Get(ctx context.Context, url string) (ScrollResult[gjso
 			// No results or empty search-after-header indicates pagination is done
 			searchAfter = resp.Header.Get("cmr-search-after")
 			if searchAfter == "" || len(items) == 0 {
-				fmt.Println("done")
 				return
 			}
 		}
