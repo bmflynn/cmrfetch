@@ -146,16 +146,44 @@ an issue.
    │ boundingbox         │ [-170.845001,-41.507393,-135.764923,-36.170902,-144.453003,-16.412685,-172.955856,-20.74267,-170.845001,-41.507393]                                   │
    └─────────────────────┴───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
    ```
+   
+# Installation
+1. Download the [LATEST](https://github.com/bmflynn/cmrfetch/releases/latest) release for your
+   OS and architecture
+2. Make it executable
+3. Save it somewhere on your `PATH`
 
-# SLSA
-This repository uses the [SLSA](https://slsa.dev/) Github [Action](https://github.com/slsa-framework/slsa-github-generator/blob/main/internal/builders/go/README.md#multi-platform-builds) 
-to provide Build [Level-3](https://slsa.dev/spec/v1.0/levels#build-l3) provenance.
+For a linux on amd64 this may look something like:
+```sh
+# determine the latest release version
+VER=$(basename $(curl -is https://github.com/bmflynn/cmrfetch/releases/latest | grep -i location | cut -d' ' -f2))
+curl -sSfL -o cmrfetch https://github.com/bmflynn/cmrfetch/releases/download/${VER}/cmrfetch-linux-amd64
+chmod 755 cmrfetch
+sudo mv cmrfetch /usr/local/bin/
+```
 
-The signed provenance files, or attestation, artifacts are available along with the release binaries.
-See [slsa-verifier](https://github.com/slsa-framework/slsa-verifier) for instruction on how to 
-verify the artifacts.
+## SLSA Provenance Verification
+This repository creates and stores [SLSA](https://slsa.dev/) Build [Level-3](https://slsa.dev/spec/v1.0/levels#build-l3)
+artifacts (attestations) that can be used to verify the provenance of the biarnies and its inputs.
 
-References:
+You can use [slsa-verifier](https://github.com/slsa-framework/slsa-verifier) to verify the build by
+doing something like so:
+```sh
+# Download the binary
+curl -sSfL -O https://github.com/bmflynn/cmrfetch/releases/download/v0.2.3/cmrfetch-linux-amd64
+# Download the provenance file
+curl -sSfL -O https://github.com/bmflynn/cmrfetch/releases/download/v0.2.3/cmrfetch-linux-amd64.intoto.jsonl
+# Run the verification, saving the provenance data
+slsa-verifier verify-artifact \
+    --source-uri github.com/bmflynn/cmrfetch cmrfetch-linux-amd64 \
+    --provenance-path cmrfetch-linux-amd64.intoto.jsonl \
+    --print-provenance \
+    | jq . > provenance.json
+```
+See the [slsa-verifier](https://github.com/slsa-framework/slsa-verifier) project page for further
+installation and usage instructions.
+
+# References:
 
   * [NASA Eathdata](https://earthdata.nasa.gov)
   * [NASA Earthdata CMR Search API](https://cmr.earthdata.nasa.gov/search)
