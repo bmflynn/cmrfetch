@@ -97,14 +97,23 @@ an issue.
    ```
 2. Search for the NOAA-20 Level-2 Cloud Mask (`CLDMSK_L2_VIIRS_NOAA20`).
    
-   First get the collection concept id using:
+   First get the collection concept id using (with a little more detail this time):
    ```
-   $> cmrfetch collections -s CLDMSK_L2_VIIRS_NOAA20 
-   ┌────────────────────────┬─────────┬───────────────────┬─────────────┬──────────┐
-   │ SHORTNAME              │ VERSION │ CONCEPT           │ REVISION_ID │ PROVIDER │
-   ├────────────────────────┼─────────┼───────────────────┼─────────────┼──────────┤
-   │ CLDMSK_L2_VIIRS_NOAA20 │ 1       │ C1964798938-LAADS │ 6           │ LAADS    │
-   └────────────────────────┴─────────┴───────────────────┴─────────────┴──────────┘
+   $> cmrfetch collections -s CLDMSK_L2_VIIRS_NOAA20 -o short
+   ┌──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+   │ VIIRS/NOAA20 Cloud Mask and Spectral Test Results 6-Min L2 Swath 750m                                                │
+   ├──────────────────┬───────────────────────────────────────────────────────────────────────────────────────────────────┤
+   │ shortname        │ CLDMSK_L2_VIIRS_NOAA20                                                                            │
+   │ version          │ 1                                                                                                 │
+   │ processing_level │ 2                                                                                                 │
+   │ instruments      │ NOAA-20/VIIRS                                                                                     │
+   │ concept_id       │ C1964798938-LAADS                                                                                 │
+   │ doi              │ 10.5067/VIIRS/CLDMSK_L2_VIIRS_NOAA20.001                                                          │
+   │ provider         │ LAADS                                                                                             │
+   │ revision_id      │ 6                                                                                                 │
+   │ revision_date    │ 2023-04-04T12:39:45.378Z                                                                          │
+   │ infourls         │ https://atmosphere-imager.gsfc.nasa.gov/sites/default/files/ModAtmo/MVCM_User_Guide_01Oct2020.pdf │
+   └──────────────────┴───────────────────────────────────────────────────────────────────────────────────────────────────┘
    ```
    Then use the collection concept id to get view some granules:
    ```
