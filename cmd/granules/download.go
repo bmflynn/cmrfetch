@@ -18,6 +18,9 @@ const (
 
 func zultsToRequests(granules internal.GranuleResult, destdir string, clobber bool) chan internal.DownloadRequest {
 	requests := make(chan internal.DownloadRequest)
+	if !filepath.IsAbs(destdir) {
+		panic("destdir is not absolute")
+	}
 	go func() {
 		defer close(requests)
 		for gran := range granules.Ch {
@@ -73,6 +76,10 @@ func doDownload(
 	fetcherFactory := func() (internal.Fetcher, error) {
 		fetcher, err := internal.NewHTTPFetcher(netrc)
 		return fetcher.Fetch, err
+	}
+	destdir, err = filepath.Abs(destdir)
+	if err != nil {
+		return fmt.Errorf("getting absolute path for %s", destdir)
 	}
 	requests := zultsToRequests(zult, destdir, clobber)
 	results, err := internal.FetchConcurrentWithContext(ctx, requests, fetcherFactory, concurrency)
