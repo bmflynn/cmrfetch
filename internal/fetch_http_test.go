@@ -28,7 +28,6 @@ func (r *mockReadCloser) Read(buf []byte) (int, error) {
 }
 
 func Test_newFailedDownloadError(t *testing.T) {
-
 	t.Run("err reading body", func(t *testing.T) {
 		resp := &http.Response{
 			Body:    &mockReadCloser{err: fmt.Errorf("bogus error")},

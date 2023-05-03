@@ -147,7 +147,7 @@ func (api *CMRSearchAPI) newCMRError(resp *http.Response) error {
 		Status:    resp.Status,
 		RequestID: resp.Header.Get("cmr-request-id"),
 	}
-  // attempt to unmarshal what we think errors from CMR should look like
+	// attempt to unmarshal what we think errors from CMR should look like
 	body, _ := ioutil.ReadAll(resp.Body)
 	errs := struct {
 		Errors []string `json:"errors"`

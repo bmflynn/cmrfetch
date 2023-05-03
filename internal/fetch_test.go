@@ -80,5 +80,4 @@ func Test_findNetrc(t *testing.T) {
 		require.NoError(t, err, "expected no error looking up netrc")
 		require.Equal(t, path, gotpath, "Should have returned path to netrc in our HOME: %s", path)
 	})
-
 }

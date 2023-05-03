@@ -34,7 +34,7 @@ func TestFetchConcurrent(t *testing.T) {
 		Checksum:    csum,
 		Dest:        filepath.Join(dir, "testoutput.txt"),
 	}
-  close(requests)
+	close(requests)
 
 	resultsCh, err := FetchConcurrent(requests, func() (Fetcher, error) { return fetcher, nil }, 1)
 	require.NoError(t, err)
