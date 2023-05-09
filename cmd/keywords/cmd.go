@@ -1,4 +1,4 @@
-package keyworkds
+package keywords
 
 import (
 	"context"
