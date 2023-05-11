@@ -57,7 +57,12 @@ func (wh *writerHasher) Write(buf []byte) (int, error) {
 	return n, err
 }
 
-func (wh *writerHasher) Checksum() string { return hex.EncodeToString(wh.hash.Sum(nil)) }
+func (wh *writerHasher) Checksum() string {
+	if wh.hash == nil {
+		return ""
+	}
+	return hex.EncodeToString(wh.hash.Sum(nil))
+}
 
 // findNetrc trys to lookup .netrc(_netrc on windows) in the home dir
 func findNetrc() (string, error) {

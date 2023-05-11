@@ -46,6 +46,18 @@ func Test_writerHasher(t *testing.T) {
 	require.Equal(t, 3, n)
 
 	require.NotEmpty(t, wh.Checksum(), "checksum should be set after writing")
+
+	t.Run("nil has", func(t *testing.T) {
+		wh := writerHasher{
+			Writer: bytes.NewBuffer(nil),
+		}
+
+		n, err := wh.Write([]byte("xxx"))
+		require.NoError(t, err)
+		require.Equal(t, 3, n)
+
+		require.Empty(t, wh.Checksum(), "checksum should be empty when hash is nil")
+	})
 }
 
 func Test_findNetrc(t *testing.T) {
