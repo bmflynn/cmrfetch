@@ -49,8 +49,8 @@ func readHoldings(r io.Reader) ([]Provider, error) {
 	providers := map[string]Provider{}
 	for _, x := range dat {
 		var prov Provider
-		if _, ok := providers[x.ProviderID]; ok {
-			prov = providers[x.ProviderID]
+		if p, ok := providers[x.ProviderID]; ok {
+			prov = p
 		} else {
 			prov = Provider{ID: x.ProviderID, Collections: []CollectionItem{}}
 		}
@@ -81,6 +81,10 @@ func getCachedProviderHoldings() ([]Provider, time.Time, error) {
 	}
 	if !IsDir(dir) {
 		return nil, time.Time{}, fmt.Errorf("expected %s to be a dir", dir)
+	}
+	fpath := filepath.Join(dir, "provider_holdings.json")
+	if !Exists(fpath) {
+		return nil, time.Time{}, nil
 	}
 	f, err := os.Open(filepath.Join(dir, "provider_holdings.json"))
 	if err != nil {
