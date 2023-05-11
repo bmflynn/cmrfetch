@@ -3,7 +3,8 @@ package cmd
 import (
 	"github.com/bmflynn/cmrfetch/cmd/collections"
 	"github.com/bmflynn/cmrfetch/cmd/granules"
-	keyworkds "github.com/bmflynn/cmrfetch/cmd/keywords"
+	"github.com/bmflynn/cmrfetch/cmd/keywords"
+	"github.com/bmflynn/cmrfetch/cmd/providers"
 	"github.com/bmflynn/cmrfetch/internal"
 	"github.com/spf13/cobra"
 )
@@ -46,7 +47,8 @@ Project: https://github.com/bmflynn/cmrfetch
 func init() {
 	rootCmd.AddCommand(collections.Cmd)
 	rootCmd.AddCommand(granules.Cmd)
-	rootCmd.AddCommand(keyworkds.Cmd)
+	rootCmd.AddCommand(keywords.Cmd)
+	rootCmd.AddCommand(providers.Cmd)
 }
 
 func Execute() error {

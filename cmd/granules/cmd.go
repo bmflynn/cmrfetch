@@ -18,6 +18,7 @@ var (
 	validFields = []string{
 		"name", "size", "checksum", "checksum_alg", "download_url", "native_id", "revision_id",
 		"concept_id", "collection", "download_direct_url", "daynight", "timerange", "boundingbox",
+		"provider_dates",
 	}
 	defaultFields = validFields
 )

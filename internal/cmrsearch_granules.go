@@ -156,19 +156,20 @@ func (p *SearchGranuleParams) build() (url.Values, error) {
 }
 
 type Granule struct {
-	Name         string   `json:"name"`
-	Size         string   `json:"size"`
-	Checksum     string   `json:"checksum"`
-	ChecksumAlg  string   `json:"checksum_alg"`
-	GetDataURL   string   `json:"download_url"`
-	GetDataDAURL string   `json:"download_direct_url"`
-	NativeID     string   `json:"native_id"`
-	RevisionID   string   `json:"revision_id"`
-	ConceptID    string   `json:"concept_id"`
-	Collection   string   `json:"collection"`
-	DayNightFlag string   `json:"daynight"`
-	TimeRange    []string `json:"timerange"`
-	BoundingBox  []string `json:"boundingbox"`
+	Name          string            `json:"name"`
+	Size          string            `json:"size"`
+	Checksum      string            `json:"checksum"`
+	ChecksumAlg   string            `json:"checksum_alg"`
+	GetDataURL    string            `json:"download_url"`
+	GetDataDAURL  string            `json:"download_direct_url"`
+	NativeID      string            `json:"native_id"`
+	RevisionID    string            `json:"revision_id"`
+	ConceptID     string            `json:"concept_id"`
+	Collection    string            `json:"collection"`
+	DayNightFlag  string            `json:"daynight"`
+	TimeRange     []string          `json:"timerange"`
+	BoundingBox   []string          `json:"boundingbox"`
+	ProviderDates map[string]string `json:"provider_dates"`
 }
 
 var dataFileRx = regexp.MustCompile(`\.(nc|hdf|h5|dat)`)
@@ -250,6 +251,11 @@ func newGranuleFromUMM(zult gjson.Result) Granule {
 	// Subideally attempt to get the name of the first file in the archive info
 	if gran.Name == "" {
 		gran.Name = zult.Get("umm.DataGranule.ArchiveAndDistributionInformation.0.Name").String()
+	}
+
+	gran.ProviderDates = map[string]string{}
+	for _, dt := range zult.Get("umm.ProviderDates").Array() {
+		gran.ProviderDates[dt.Get("Type").String()] = dt.Get("Date").String()
 	}
 
 	return gran

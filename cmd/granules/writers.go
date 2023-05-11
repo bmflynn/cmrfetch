@@ -31,7 +31,15 @@ func shortWriter(zult internal.GranuleResult, w io.Writer, _ []string) error {
 		dat := granuleToMap(granule, fields)
 		row := table.Row{}
 		for _, field := range fields {
-			row = append(row, dat[field])
+			val := dat[field]
+			if field == "provider_dates" {
+				s := ""
+				for k, v := range granule.ProviderDates {
+					s += fmt.Sprintf("%s: %v\n", k, v)
+				}
+				val = strings.TrimSpace(s)
+			}
+			row = append(row, val)
 		}
 		t.AppendRow(row)
 	}
@@ -47,7 +55,15 @@ func tablesWriter(zult internal.GranuleResult, w io.Writer, fields []string) err
 		t.SetStyle(table.StyleLight)
 		dat := granuleToMap(granule, fields)
 		for _, field := range fields {
-			t.AppendRow(table.Row{field, dat[field]})
+			val := dat[field]
+			if field == "provider_dates" {
+				s := ""
+				for k, v := range granule.ProviderDates {
+					s += fmt.Sprintf("%s: %v\n", k, v)
+				}
+				val = s
+			}
+			t.AppendRow(table.Row{field, val})
 		}
 		t.Render()
 	}
@@ -79,6 +95,7 @@ func csvWriter(zult internal.GranuleResult, w io.Writer, fields []string) error 
 	return zult.Err()
 }
 
+// FIXME: Uhg! This is so ugly. Need a better way to map granule to fields. Consider mapstructure.
 func granuleToMap(gran internal.Granule, fields []string) map[string]any {
 	haveField := map[string]bool{}
 	for _, name := range fields {
