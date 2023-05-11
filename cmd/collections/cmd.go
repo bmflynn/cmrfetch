@@ -41,7 +41,7 @@ func init() {
 		"Filter on platform short name. May be provided more than once or comma separated. "+
 			"Common platforms: NOAA-21, NOAA-20, Suomi-NPP, Aqua, Terra.")
 	flags.StringP("title", "t", "", "Collection title search or search pattern (supporting ? or *)")
-	flags.StringP("output", "o", "brief", "Output format. One of table, short, long")
+	flags.StringP("output", "o", "brief", "Output format. One of brief, short, long")
 	flags.StringP("sortby", "S", "",
 		fmt.Sprintf("Sort by one of %s. Prefix the field name by `-` to sort descending", strings.Join(sortFields, ", ")))
 	flags.Bool("cloud-hosted", false,
@@ -84,7 +84,7 @@ var Cmd = &cobra.Command{
 
     cmrfetch collections -k aerdt
 
-  Search for a collection by instrument:
+  Search for a collection by platform:
 
     cmrfetch collections -p Suomi-NPP
 `,

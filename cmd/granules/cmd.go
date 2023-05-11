@@ -172,7 +172,13 @@ func init() {
 	flags.Float64Slice("point", nil, "Granules containing point lon,lat.")
 	flags.StringSlice("fields", defaultFields,
 		"Fields to include in output; ignored for --output=short. "+strings.Join(validFields, ", "))
-	flags.StringP("output", "o", "short", "Output format. One of short, long, json, or, csv")
+	flags.StringP("output", "o", "short",
+		"Output format. One of short, long, json, or, csv. The default output does not handle paged "+
+			"results and must load all results in memory before rendering. Make sure to provide enough "+
+			"filters to limit the result set to a reasonable size or use json or csv output.")
+
+	flags.MarkHidden("shortname")
+	flags.MarkDeprecated("shortname", "Provide the collection concept id instead")
 }
 
 func do(api *internal.CMRSearchAPI, params *internal.SearchGranuleParams, writerName string, fields []string, yes bool) error {
@@ -198,7 +204,7 @@ func do(api *internal.CMRSearchAPI, params *internal.SearchGranuleParams, writer
 	if writerName == "short" && zult.Hits() > 1000 {
 		log.Printf(
 			"WARNING: short output renders in memory and you have more than 1000 results. " +
-				"Consider limiting your search to reduce the number of results or use CSV or json " +
+				"Consider limiting your search to reduce the number of results or use json or csv " +
 				"output.")
 	}
 
