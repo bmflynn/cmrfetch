@@ -123,6 +123,10 @@ func (f *HTTPFetcher) Fetch(ctx context.Context, url string, w io.Writer) (int64
 	}
 	defer resp.Body.Close()
 
+	if err := validateResponse(req, resp); err != nil {
+		return 0, err
+	}
+
 	var size int64
 	buf := make([]byte, f.readSize)
 	r := bufio.NewReader(resp.Body)
@@ -143,4 +147,13 @@ func (f *HTTPFetcher) Fetch(ctx context.Context, url string, w io.Writer) (int64
 		}
 	}
 	return size, nil
+}
+
+func validateResponse(req *http.Request, resp *http.Response) error {
+	wanted := req.URL.Hostname()
+	found := resp.Request.URL.Hostname()
+	if wanted != found {
+		return fmt.Errorf("probable auth redirect error; expected host %s, found %s", wanted, found)
+	}
+	return nil
 }

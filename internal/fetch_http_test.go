@@ -123,3 +123,12 @@ func TestHTTPFetcher(t *testing.T) {
 		require.ErrorAs(t, err, &dlErr)
 	})
 }
+
+func Test_validateResponse(t *testing.T) {
+	req := httptest.NewRequest("GET", "http://localhost/", nil)
+	resp := &http.Response{
+		Request: httptest.NewRequest("GET", "http://nope/", nil),
+	}
+
+	require.Error(t, validateResponse(req, resp))
+}
