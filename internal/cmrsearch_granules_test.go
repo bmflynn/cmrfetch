@@ -49,42 +49,24 @@ func TestGranuleSearchParams(t *testing.T) {
 
 func Test_newGranuleFromUMM(t *testing.T) {
 	t.Run("name lookup", func(t *testing.T) {
-		expected := "I AM GRANULE NAME"
+		expected := "GRANULE_NAME"
 		cases := []struct {
 			Name string
 			Body string
 		}{
 			{
-				"DataGranule",
+				"DownloadURL",
 				fmt.Sprintf(`
         {
           "meta": {},
           "umm": {
-            "DataGranule": {
-              "Identifiers": [
-                {
-                  "Identifier": "%s",
-                  "IdentifierType": "ProducerGranuleId"
-                }
-              ]
-            }
-          }
-        }
-        `, expected),
-			},
-			{
-				"ArchiveInfo",
-				fmt.Sprintf(`
-        {
-          "meta": {},
-          "umm": {
-            "DataGranule": {
-              "ArchiveAndDistributionInformation": [
-                {
-                  "Name": "%s"
-                }
-              ]
-            }
+            "RelatedUrls": [
+              {
+                "URL": "https://sips-data.ssec.wisc.edu/nrt/47503027/%s",
+                "Type": "GET DATA",
+                "MimeType": "application/x-netcdf"
+              }
+            ]
           }
         }
         `, expected),

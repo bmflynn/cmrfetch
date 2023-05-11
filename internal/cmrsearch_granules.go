@@ -220,10 +220,6 @@ func newGranuleFromUMM(zult gjson.Result) Granule {
 	gran.Checksum = strings.TrimSpace(gran.Checksum)
 	gran.ChecksumAlg = strings.TrimSpace(gran.ChecksumAlg)
 
-	gran.GetDataURL = strings.Join(findDownloadURLs(zult, false), "\n")
-	if gran.GetDataURL != "" {
-		gran.Name = path.Base(gran.GetDataURL)
-	}
 	gran.GetDataDAURL = strings.Join(findDownloadURLs(zult, true), "\n")
 
 	gran.DayNightFlag = zult.Get("umm.DataGranule.DayNightFlag").String()
@@ -241,16 +237,10 @@ func newGranuleFromUMM(zult gjson.Result) Granule {
 		gran.BoundingBox = append(gran.BoundingBox, strings.Join(points, ","))
 	}
 
-	// Find the granule name, which may be in one of several sources
-	for _, elem := range zult.Get("umm.DataGranule.Identifiers").Array() {
-		if elem.Get("IdentifierType").String() == "ProducerGranuleId" {
-			gran.Name = elem.Get("Identifier").String()
-			break
-		}
-	}
-	// Subideally attempt to get the name of the first file in the archive info
-	if gran.Name == "" {
-		gran.Name = zult.Get("umm.DataGranule.ArchiveAndDistributionInformation.0.Name").String()
+	// Use the URL basename as the filename
+	gran.GetDataURL = strings.Join(findDownloadURLs(zult, false), "\n")
+	if gran.GetDataURL != "" {
+		gran.Name = path.Base(gran.GetDataURL)
 	}
 
 	gran.ProviderDates = map[string]string{}
