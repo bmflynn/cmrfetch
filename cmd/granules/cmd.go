@@ -140,7 +140,7 @@ func init() {
 
 	flags.BoolP("verbose", "v", false, "Verbose output")
 	flags.BoolP("yes", "y", false, "Answer yes to any prompts when using --download.")
-	flags.String("download", "",
+	flags.StringP("download", "d", "",
 		"Download the resulting granules to the directory provided. If the directory does not "+
 			fmt.Sprintf("exist it will be created. More than %v total granules in the ", maxResultsWithoutPrompt)+
 			"result set will require confirmation, which can be skipped using --yes. By default, "+
