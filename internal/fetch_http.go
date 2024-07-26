@@ -123,9 +123,9 @@ func (f *HTTPFetcher) Fetch(ctx context.Context, url string, w io.Writer) (int64
 	}
 	defer resp.Body.Close()
 
-	if err := validateResponse(req, resp); err != nil {
-		return 0, err
-	}
+	// if err := validateResponse(req, resp); err != nil {
+	// 	return 0, err
+	// }
 
 	var size int64
 	buf := make([]byte, f.readSize)
