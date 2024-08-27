@@ -67,14 +67,18 @@ machine urs.earthdata.nasa.gov login <LOGIN> password <PASSWORD>
 
 ### Earthdata Login (EDL) User Token Authentication
 
-As an alternative to netrc, a user token may be used. Once an EDL
+As an alternative to `netrc`, a user token may be used. Once an EDL
 account has been created, EDL allows for the creation of user tokens.
 
 See [EDL's User Token Management](https://urs.earthdata.nasa.gov/documentation/for_users/user_token)
-for more information on generating tokens.
+documentation for more information on generating tokens.
 
 The token may be provided to `cmrfetch` via the `--edltoken` flag or the `EDL_TOKEN`
 environment variable.
+
+> **NOTE**: If either `--edltoken` or `EDL_TOKEN` is provided, token auth will take priority
+> over `netrc` (`netrc` login will not be attempted). The `--edltoken` value, if provided,
+> will take priority over the `EDL_TOKEN` environment variable.
 
 ### Authentication Cookies
 
