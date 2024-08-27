@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/http/cookiejar"
+	"os"
 	"sync"
 	"time"
 
@@ -73,6 +74,14 @@ func newRedirectWithNetrcCredentials() (func(*http.Request, []*http.Request) err
 	}, nil
 }
 
+// Sets token auth header
+func getTokenRedirect(bearer string) (func(*http.Request, []*http.Request) error, error) {
+	return func(req *http.Request, via []*http.Request) error {
+		req.Header.Add("Authorization", "Bearer "+bearer)
+		return nil
+	}, nil
+}
+
 // HTTPFetch is a Fetcher that supports basic file fetching. It supports netrc for authentication
 // redirects and uses an in-memory cookie jar to save authentication cookies provided by
 // authentication services such as NASA Einternal.
@@ -81,11 +90,29 @@ type HTTPFetcher struct {
 	readSize int64
 }
 
-func NewHTTPFetcher(netrc bool) (*HTTPFetcher, error) {
+func NewHTTPFetcher(netrc bool, token string) (*HTTPFetcher, error) {
 	client := &http.Client{
 		Timeout: 20 * time.Minute,
 	}
-	if netrc {
+
+	// Check for token; commandline flag has priority over env var
+	resolvedToken := token
+	if resolvedToken == "" {
+		// check env var if commandline flag not set
+		bearer, ok := os.LookupEnv("EDL_TOKEN")
+		if ok && bearer != "" {
+			resolvedToken = bearer
+		}
+	}
+
+	// Token has priority over netrc if set
+	if resolvedToken != "" {
+		var err error
+		client.CheckRedirect, err = getTokenRedirect(resolvedToken)
+		if err != nil {
+			return nil, err
+		}
+	} else if netrc {
 		// Netrc needs a cookiejar so we don't have to do redirect everytime
 		jar, err := cookiejar.New(nil)
 		if err != nil {
@@ -116,6 +143,9 @@ func (f *HTTPFetcher) Fetch(ctx context.Context, url string, w io.Writer) (int64
 	}
 
 	resp, err := f.client.Do(req)
+	if err != nil {
+		return 0, err
+	}
 	if resp.StatusCode != http.StatusOK {
 		err = newFailedDownloadError(resp)
 		resp.Body.Close()

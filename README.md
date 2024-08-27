@@ -65,6 +65,17 @@ machine urs.earthdata.nasa.gov login <LOGIN> password <PASSWORD>
 > **NOTE**: It is very important to make sure this file is not readable by other
 > users. On linux/osx you can limit permissions like so `chmod 0600 ~/.netrc`
 
+### Earthdata Login (EDL) User Token Authentication
+
+As an alternative to netrc, a user token may be used. Once an EDL
+account has been created, EDL allows for the creation of user tokens.
+
+See [EDL's User Token Management](https://urs.earthdata.nasa.gov/documentation/for_users/user_token)
+for more information on generating tokens.
+
+The token may be provided to `cmrfetch` via the `--edltoken` flag or the `EDL_TOKEN`
+environment variable.
+
 ### Authentication Cookies
 
 `cmrfetch` performs a single login for every instantiation. If you are

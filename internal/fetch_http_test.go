@@ -98,7 +98,7 @@ func TestHTTPFetcher(t *testing.T) {
 		}))
 		defer svr.Close()
 
-		fetcher, err := NewHTTPFetcher(true)
+		fetcher, err := NewHTTPFetcher(true, nil)
 		require.NoError(t, err)
 
 		w := bytes.NewBuffer(nil)
@@ -113,7 +113,7 @@ func TestHTTPFetcher(t *testing.T) {
 		}))
 		defer svr.Close()
 
-		fetcher, err := NewHTTPFetcher(true)
+		fetcher, err := NewHTTPFetcher(true, nil)
 		require.NoError(t, err)
 
 		w := bytes.NewBuffer(nil)
