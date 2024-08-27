@@ -51,6 +51,27 @@ func (e *FailedDownload) Error() string {
 	return fmt.Sprintf("%s requestid=%s", e.Status, rid)
 }
 
+func resolveEDLToken(token string) string {
+	// Check for token; commandline flag has priority over env var
+	resolvedToken := token
+	if resolvedToken == "" {
+		// Check env var if commandline flag not set
+		bearer, ok := os.LookupEnv("EDL_TOKEN")
+		if ok && bearer != "" {
+			resolvedToken = bearer
+		}
+	}
+	return resolvedToken
+}
+
+// Sets token auth header
+func newRedirectWithToken(bearer string) (func(*http.Request, []*http.Request) error, error) {
+	return func(req *http.Request, via []*http.Request) error {
+		req.Header.Add("Authorization", "Bearer "+bearer)
+		return nil
+	}, nil
+}
+
 // Sets basic auth on redirect if the host is in the netrc file.
 func newRedirectWithNetrcCredentials() (func(*http.Request, []*http.Request) error, error) {
 	fpath, err := defaultNetrcFinder()
@@ -74,14 +95,6 @@ func newRedirectWithNetrcCredentials() (func(*http.Request, []*http.Request) err
 	}, nil
 }
 
-// Sets token auth header
-func getTokenRedirect(bearer string) (func(*http.Request, []*http.Request) error, error) {
-	return func(req *http.Request, via []*http.Request) error {
-		req.Header.Add("Authorization", "Bearer "+bearer)
-		return nil
-	}, nil
-}
-
 // HTTPFetch is a Fetcher that supports basic file fetching. It supports netrc for authentication
 // redirects and uses an in-memory cookie jar to save authentication cookies provided by
 // authentication services such as NASA Einternal.
@@ -95,20 +108,11 @@ func NewHTTPFetcher(netrc bool, token string) (*HTTPFetcher, error) {
 		Timeout: 20 * time.Minute,
 	}
 
-	// Check for token; commandline flag has priority over env var
-	resolvedToken := token
-	if resolvedToken == "" {
-		// check env var if commandline flag not set
-		bearer, ok := os.LookupEnv("EDL_TOKEN")
-		if ok && bearer != "" {
-			resolvedToken = bearer
-		}
-	}
-
 	// Token has priority over netrc if set
+	resolvedToken := resolveEDLToken(token)
 	if resolvedToken != "" {
 		var err error
-		client.CheckRedirect, err = getTokenRedirect(resolvedToken)
+		client.CheckRedirect, err = newRedirectWithToken(resolvedToken)
 		if err != nil {
 			return nil, err
 		}
