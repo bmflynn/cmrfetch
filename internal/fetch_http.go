@@ -17,6 +17,7 @@ import (
 )
 
 var defaultNetrcFinder = findNetrc
+var edlToken = ""
 
 type FailedDownload struct {
 	RequestID    string
@@ -109,14 +110,8 @@ func NewHTTPFetcher(netrc bool, token string) (*HTTPFetcher, error) {
 	}
 
 	// Token has priority over netrc if set
-	resolvedToken := resolveEDLToken(token)
-	if resolvedToken != "" {
-		var err error
-		client.CheckRedirect, err = newRedirectWithToken(resolvedToken)
-		if err != nil {
-			return nil, err
-		}
-	} else if netrc {
+	edlToken = resolveEDLToken(token)
+	if edlToken == "" && netrc {
 		// Netrc needs a cookiejar so we don't have to do redirect everytime
 		jar, err := cookiejar.New(nil)
 		if err != nil {
@@ -144,6 +139,10 @@ func (f *HTTPFetcher) Fetch(ctx context.Context, url string, w io.Writer) (int64
 	req, err := f.newRequest(ctx, url)
 	if err != nil {
 		return 0, err
+	}
+
+	if edlToken != "" {
+		req.Header.Add("Authorization", "Bearer "+edlToken)
 	}
 
 	resp, err := f.client.Do(req)
