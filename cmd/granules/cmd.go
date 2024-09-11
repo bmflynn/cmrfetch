@@ -82,6 +82,8 @@ NASA Earthdata Authentication
 			return fmt.Errorf("at least one of --collection, --shortname, --nativeid, or --filename is required")
 		}
 
+		token, err := flags.GetString("edltoken")
+		failOnError(err)
 		netrc, err := flags.GetBool("netrc")
 		failOnError(err)
 		verbose, err := flags.GetBool("verbose")
@@ -123,7 +125,7 @@ NASA Earthdata Authentication
 		api := internal.NewCMRSearchAPI(logger)
 
 		if destdir != "" {
-			err = doDownload(context.TODO(), api, params, destdir, netrc, clobber, yes, verbose, concurrency)
+			err = doDownload(context.TODO(), api, params, destdir, token, netrc, clobber, yes, verbose, concurrency)
 		} else {
 			err = do(api, params, output, fields, yes)
 		}
@@ -148,10 +150,14 @@ func init() {
 			"Checksums are verified for all downloaded files, if a checksum is available.")
 	flags.BoolP("download-clobber", "C", false, "Overwrite any existing files when downloading.")
 	flags.Int("download-concurrency", defaultDownloadConcurrency, "Number of concurrent downloads")
+	flags.String("edltoken", "",
+		"Use a NASA EDL token for bearer-based authentication on redirect. Either this or netrc is "+
+			"necessary for NASA Earthdata authentication, which many providers use. See the NASA "+
+			"Earthdata Authentication above.")
 	flags.Bool("netrc", true,
-		"Use netrc for basic authentication credentials on redirect. This is necessary for NASA "+
-			"Earthdata authentication, which many providers use. See the NASA Earthdata Authentication "+
-			"above.")
+		"Use netrc for basic authentication credentials on redirect. Either this or edltoken is "+
+			"necessary for NASA Earthdata authentication, which many providers use. See the NASA "+
+			"Earthdata Authentication above.")
 
 	flags.StringSliceP("nativeid", "N", nil, "granule native id")
 	flags.StringSliceP("collection", "c", nil, "Collection concept id")

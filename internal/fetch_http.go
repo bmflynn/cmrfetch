@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/http/cookiejar"
+	"os"
 	"sync"
 	"time"
 
@@ -16,6 +17,7 @@ import (
 )
 
 var defaultNetrcFinder = findNetrc
+var edlToken = ""
 
 type FailedDownload struct {
 	RequestID    string
@@ -50,6 +52,27 @@ func (e *FailedDownload) Error() string {
 	return fmt.Sprintf("%s requestid=%s", e.Status, rid)
 }
 
+func resolveEDLToken(token string) string {
+	// Check for token; commandline flag has priority over env var
+	resolvedToken := token
+	if resolvedToken == "" {
+		// Check env var if commandline flag not set
+		bearer, ok := os.LookupEnv("EDL_TOKEN")
+		if ok && bearer != "" {
+			resolvedToken = bearer
+		}
+	}
+	return resolvedToken
+}
+
+// Sets token auth header
+func newRedirectWithToken(bearer string) (func(*http.Request, []*http.Request) error, error) {
+	return func(req *http.Request, via []*http.Request) error {
+		req.Header.Add("Authorization", "Bearer "+bearer)
+		return nil
+	}, nil
+}
+
 // Sets basic auth on redirect if the host is in the netrc file.
 func newRedirectWithNetrcCredentials() (func(*http.Request, []*http.Request) error, error) {
 	fpath, err := defaultNetrcFinder()
@@ -81,11 +104,14 @@ type HTTPFetcher struct {
 	readSize int64
 }
 
-func NewHTTPFetcher(netrc bool) (*HTTPFetcher, error) {
+func NewHTTPFetcher(netrc bool, token string) (*HTTPFetcher, error) {
 	client := &http.Client{
 		Timeout: 20 * time.Minute,
 	}
-	if netrc {
+
+	// Token has priority over netrc if set
+	edlToken = resolveEDLToken(token)
+	if edlToken == "" && netrc {
 		// Netrc needs a cookiejar so we don't have to do redirect everytime
 		jar, err := cookiejar.New(nil)
 		if err != nil {
@@ -115,7 +141,14 @@ func (f *HTTPFetcher) Fetch(ctx context.Context, url string, w io.Writer) (int64
 		return 0, err
 	}
 
+	if edlToken != "" {
+		req.Header.Add("Authorization", "Bearer "+edlToken)
+	}
+
 	resp, err := f.client.Do(req)
+	if err != nil {
+		return 0, err
+	}
 	if resp.StatusCode != http.StatusOK {
 		err = newFailedDownloadError(resp)
 		resp.Body.Close()

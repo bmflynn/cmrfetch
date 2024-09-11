@@ -45,7 +45,7 @@ func doDownload(
 	ctx context.Context,
 	api *internal.CMRSearchAPI,
 	params *internal.SearchGranuleParams,
-	destdir string,
+	destdir, token string,
 	netrc, clobber, yes, verbose bool,
 	concurrency int,
 ) error {
@@ -74,7 +74,7 @@ func doDownload(
 	}
 
 	fetcherFactory := func() (internal.Fetcher, error) {
-		fetcher, err := internal.NewHTTPFetcher(netrc)
+		fetcher, err := internal.NewHTTPFetcher(netrc, token)
 		return fetcher.Fetch, err
 	}
 	destdir, err = filepath.Abs(destdir)
