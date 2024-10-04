@@ -54,6 +54,8 @@ func doDownload(
 		return err
 	}
 
+	log.Printf("%v results\n", zult.Hits())
+
 	if !yes && zult.Hits() > maxResultsWithoutPrompt {
 		fmt.Printf("There are more than %v, CTRL-C to cancel or ENTER to continue\n", maxResultsWithoutPrompt)
 		bufio.NewReader(os.Stdin).ReadBytes('\n')
@@ -71,6 +73,11 @@ func doDownload(
 		if err != nil {
 			return fmt.Errorf("making download dir: %w", err)
 		}
+	}
+
+	token = internal.ResolveEDLToken(token)
+	if verbose {
+		log.Printf("auth netrc:%v edltoken:%v\n", netrc, token != "")
 	}
 
 	fetcherFactory := func() (internal.Fetcher, error) {

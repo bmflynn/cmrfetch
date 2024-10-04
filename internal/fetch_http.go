@@ -51,7 +51,7 @@ func (e *FailedDownload) Error() string {
 	return fmt.Sprintf("%s requestid=%s", e.Status, rid)
 }
 
-func resolveEDLToken(token string) string {
+func ResolveEDLToken(token string) string {
 	// Check for token; commandline flag has priority over env var
 	resolvedToken := token
 	if resolvedToken == "" {
@@ -103,13 +103,12 @@ type HTTPFetcher struct {
 	readSize int64
 }
 
-func NewHTTPFetcher(netrc bool, token string) (*HTTPFetcher, error) {
+func NewHTTPFetcher(netrc bool, edlToken string) (*HTTPFetcher, error) {
 	client := &http.Client{
 		Timeout: 20 * time.Minute,
 	}
 
 	// Token has priority over netrc if set
-	edlToken = resolveEDLToken(token)
 	if edlToken == "" && netrc {
 		// Netrc needs a cookiejar so we don't have to do redirect everytime
 		jar, err := cookiejar.New(nil)

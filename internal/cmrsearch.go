@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"strconv"
@@ -108,12 +108,11 @@ func (api *CMRSearchAPI) Get(ctx context.Context, url string) (ScrollResult[gjso
 				return
 			}
 			if hitsCh != nil {
-				api.debug("sending hits=%v", hits)
 				hitsCh <- hits
 				hitsCh = nil // set hits to nil so we don't send again
 			}
 
-			body, err := ioutil.ReadAll(resp.Body)
+			body, err := io.ReadAll(resp.Body)
 			if err != nil {
 				result.setErr(fmt.Errorf("reading response: %w", err))
 				return
@@ -148,7 +147,7 @@ func (api *CMRSearchAPI) newCMRError(resp *http.Response) error {
 		RequestID: resp.Header.Get("cmr-request-id"),
 	}
 	// attempt to unmarshal what we think errors from CMR should look like
-	body, _ := ioutil.ReadAll(resp.Body)
+	body, _ := io.ReadAll(resp.Body)
 	errs := struct {
 		Errors []string `json:"errors"`
 	}{}
