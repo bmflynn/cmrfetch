@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/http/cookiejar"
 	"os"
@@ -28,7 +27,7 @@ type FailedDownload struct {
 
 func newFailedDownloadError(resp *http.Response) *FailedDownload {
 	var body string
-	dat, err := ioutil.ReadAll(resp.Body)
+	dat, err := io.ReadAll(resp.Body)
 	if err == nil {
 		body = string(dat)
 	}
