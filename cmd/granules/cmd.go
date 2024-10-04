@@ -7,6 +7,7 @@ import (
 	"os"
 	"regexp"
 	"strings"
+	"time"
 
 	"github.com/bmflynn/cmrfetch/internal"
 	"github.com/spf13/cobra"
@@ -255,6 +256,10 @@ func newParams(flags *pflag.FlagSet) (*internal.SearchGranuleParams, error) {
 
 	if flags.Changed("timerange") {
 		params.Timerange(*timerange.Start, timerange.End)
+	} else {
+		end := time.Now().UTC()
+		start := end.Add(-time.Hour * 24)
+		params.Timerange(start, &end)
 	}
 
 	a, err := flags.GetFloat64Slice("polygon")
