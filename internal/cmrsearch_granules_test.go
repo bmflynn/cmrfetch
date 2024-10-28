@@ -3,10 +3,10 @@ package internal
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 	"time"
 
@@ -84,8 +84,8 @@ func Test_newGranuleFromUMM(t *testing.T) {
 		}
 	})
 
-	t.Run("", func(t *testing.T) {
-		dat, err := ioutil.ReadFile("testdata/aerdt_granules.umm_json")
+	t.Run("aerdt umm", func(t *testing.T) {
+		dat, err := os.ReadFile("testdata/aerdt_granules.umm_json")
 		require.NoError(t, err)
 		body := string(dat)
 		require.True(t, gjson.Valid(body))
@@ -110,6 +110,23 @@ func Test_newGranuleFromUMM(t *testing.T) {
 		require.Equal(t, []string{
 			"-131.310653687,66.963340759,-92.430793762,55.710681915,-37.703670502,63.907997131,-4.32655859,82.950004578,-131.310653687,66.963340759",
 		}, gran.BoundingBox)
+	})
+
+	// Ensure the archive info selected is the one matching the dowload url filename
+	t.Run("archive info selection", func(t *testing.T) {
+		dat, err := os.ReadFile("testdata/aerdt_granules.umm_json")
+		require.NoError(t, err)
+		body := string(dat)
+		require.True(t, gjson.Valid(body))
+
+		zult := gjson.Get(body, "items.0")
+		require.True(t, zult.Exists())
+
+		gran := newGranuleFromUMM(zult)
+
+		require.Equal(t, "MD5", gran.ChecksumAlg)
+		require.Equal(t, "3967c4c9d5768e4eff7e1b508b9011f2", gran.Checksum)
+		require.Equal(t, "7.0 MB", gran.Size)
 	})
 }
 
@@ -144,7 +161,7 @@ func TestSearchGranules(t *testing.T) {
 	}
 
 	t.Run("get", func(t *testing.T) {
-		dat, err := ioutil.ReadFile("testdata/aerdt_granules.umm_json")
+		dat, err := os.ReadFile("testdata/aerdt_granules.umm_json")
 		require.NoError(t, err)
 		require.True(t, gjson.Valid(string(dat)))
 
@@ -163,4 +180,40 @@ func TestSearchGranules(t *testing.T) {
 		require.NoError(t, zult.Err())
 		require.Len(t, granules, 10)
 	})
+}
+
+func testDecodeArchiveInfo(t *testing.T) {
+	gran := Granule{
+		Name: "CAL_LID_L1-Standard-V4-51.2016-08-31T23-21-32ZD.hdf",
+	}
+	ar := gjson.Parse(`
+    [
+      {
+        "Name": "CAL_LID_L1-Standard-V4-51.2016-08-31T23-21-32ZD.hdf"
+      },
+      {
+        "Checksum": {
+          "Algorithm": "MD5",
+          "Value": "ffffffffffffffffffffffffffffffff"
+        },
+        "Name": "CAL_LID_L1-Standard-V4-51.2016-08-31T23-21-32ZD.hdf",
+        "Size": 999,
+        "SizeUnit": "MB"
+      },
+      {
+        "Checksum": {
+          "Algorithm": "MD5",
+          "Value": "3e84cf5f8ffb0e97627ff9462cec8534"
+        },
+        "Name": "CAL_LID_L1-Standard-V4-51.2016-08-31T23-21-32ZD.hdf.met",
+        "Size": 8.2255859375,
+        "SizeUnit": "KB"
+      }
+    ]
+  `)
+	decodeArchiveInfo(&gran, ar.Array())
+
+	require.Equal(t, "999 MB", gran.Size)
+	require.Equal(t, "MD5", gran.ChecksumAlg)
+	require.Equal(t, "ffffffffffffffffffffffffffffffff", gran.Checksum)
 }

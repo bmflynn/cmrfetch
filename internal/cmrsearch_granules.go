@@ -206,20 +206,6 @@ func newGranuleFromUMM(zult gjson.Result) Granule {
 		)
 	}
 
-	// Not sure in which case where would be multiple infos, but it is an array so we
-	// just separate all values by new lines.
-	for _, ar := range zult.Get("umm.DataGranule.ArchiveAndDistributionInformation").Array() {
-		size := ar.Get("SizeInBytes").Int()
-		if size != 0 {
-			gran.Size += fmt.Sprintf("%s\n", ByteCountSI(ar.Get("SizeInBytes").Int()))
-		}
-		gran.Checksum += fmt.Sprintf("%s\n", ar.Get("Checksum.Value").String())
-		gran.ChecksumAlg += fmt.Sprintf("%s\n", ar.Get("Checksum.Algorithm").String())
-	}
-	gran.Size = strings.TrimSpace(gran.Size)
-	gran.Checksum = strings.TrimSpace(gran.Checksum)
-	gran.ChecksumAlg = strings.TrimSpace(gran.ChecksumAlg)
-
 	gran.GetDataDAURL = strings.Join(findDownloadURLs(zult, true), "\n")
 
 	gran.DayNightFlag = zult.Get("umm.DataGranule.DayNightFlag").String()
@@ -242,6 +228,8 @@ func newGranuleFromUMM(zult gjson.Result) Granule {
 	if gran.GetDataURL != "" {
 		gran.Name = path.Base(gran.GetDataURL)
 	}
+
+	decodeArchiveInfo(&gran, zult.Get("umm.DataGranule.ArchiveAndDistributionInformation").Array())
 
 	gran.ProviderDates = map[string]string{}
 	for _, dt := range zult.Get("umm.ProviderDates").Array() {
@@ -279,3 +267,35 @@ func (api *CMRSearchAPI) SearchGranules(ctx context.Context, params *SearchGranu
 }
 
 type GranuleResult = ScrollResult[Granule]
+
+// decodeArchiveInfo parses Size, Checksum and ChecksumAlg out of an array of archive info, iff
+// the archive info has a name and it matches the download url name.
+//
+// If there are multiple archive infos with a matching name the first available values will be
+// used in combination for size and checksum.
+func decodeArchiveInfo(gran *Granule, archiveInfo []gjson.Result) {
+	for _, ar := range archiveInfo {
+
+		// Have to have a name
+		name := ar.Get("Name").String()
+		if name != gran.Name {
+			continue
+		}
+
+		if gran.Size == "" {
+			// Either SizeInBytes or Size w/ SizeUnits
+			sizeInBytes := ar.Get("SizeInBytes").Int()
+			size := ar.Get("Size").Int()
+			if sizeInBytes != 0 {
+				gran.Size = ByteCountSI(sizeInBytes)
+			} else if size != 0 {
+				gran.Size = strings.TrimSpace(fmt.Sprintf("%v %v", size, ar.Get("SizeUnits").String()))
+			}
+		}
+
+		if gran.Checksum == "" {
+			gran.Checksum = strings.TrimSpace(ar.Get("Checksum.Value").String())
+			gran.ChecksumAlg = strings.TrimSpace(ar.Get("Checksum.Algorithm").String())
+		}
+	}
+}
