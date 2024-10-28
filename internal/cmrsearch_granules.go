@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/url"
 	"path"
-	"regexp"
 	"strings"
 	"time"
 
@@ -155,13 +154,16 @@ func (p *SearchGranuleParams) build() (url.Values, error) {
 	return query, nil
 }
 
+type File struct {
+	Name         string `json:"name"`
+	Size         string `json:"size"`
+	Checksum     string `json:"checksum"`
+	ChecksumAlg  string `json:"checksum_alg"`
+	GetDataURL   string `json:"download_url"`
+	GetDataDAURL string `json:"download_direct_url"`
+}
+
 type Granule struct {
-	Name          string            `json:"name"`
-	Size          string            `json:"size"`
-	Checksum      string            `json:"checksum"`
-	ChecksumAlg   string            `json:"checksum_alg"`
-	GetDataURL    string            `json:"download_url"`
-	GetDataDAURL  string            `json:"download_direct_url"`
 	NativeID      string            `json:"native_id"`
 	RevisionID    string            `json:"revision_id"`
 	ConceptID     string            `json:"concept_id"`
@@ -170,23 +172,23 @@ type Granule struct {
 	TimeRange     []string          `json:"timerange"`
 	BoundingBox   []string          `json:"boundingbox"`
 	ProviderDates map[string]string `json:"provider_dates"`
+	Files         []File            `json:"files"`
 }
 
-var dataFileRx = regexp.MustCompile(`\.(nc|hdf|h5|dat)`)
-
-func findDownloadURLs(zult gjson.Result, directAccess bool) []string {
+func findDownloadURLs(zult *gjson.Result, directAccess bool) map[string]string {
 	typeKey := "GET DATA"
 	if directAccess {
 		typeKey = "GET DATA VIA DIRECT ACCESS"
 	}
-	urls := []string{}
+	urls := map[string]string{}
 	for _, dat := range zult.Get("umm.RelatedUrls").Array() {
 		url := dat.Get("URL").String()
 		typ := dat.Get("Type").String()
 		if typ != typeKey {
 			continue
 		}
-		urls = append(urls, url)
+		name := path.Base(url)
+		urls[name] = url
 	}
 	return urls
 }
@@ -206,8 +208,6 @@ func newGranuleFromUMM(zult gjson.Result) Granule {
 		)
 	}
 
-	gran.GetDataDAURL = strings.Join(findDownloadURLs(zult, true), "\n")
-
 	gran.DayNightFlag = zult.Get("umm.DataGranule.DayNightFlag").String()
 	gran.TimeRange = []string{
 		zult.Get("umm.TemporalExtent.RangeDateTime.BeginningDateTime").String(),
@@ -223,18 +223,12 @@ func newGranuleFromUMM(zult gjson.Result) Granule {
 		gran.BoundingBox = append(gran.BoundingBox, strings.Join(points, ","))
 	}
 
-	// Use the URL basename as the filename
-	gran.GetDataURL = strings.Join(findDownloadURLs(zult, false), "\n")
-	if gran.GetDataURL != "" {
-		gran.Name = path.Base(gran.GetDataURL)
-	}
-
-	decodeArchiveInfo(&gran, zult.Get("umm.DataGranule.ArchiveAndDistributionInformation").Array())
-
 	gran.ProviderDates = map[string]string{}
 	for _, dt := range zult.Get("umm.ProviderDates").Array() {
 		gran.ProviderDates[dt.Get("Type").String()] = dt.Get("Date").String()
 	}
+
+	decodeFiles(&gran, zult)
 
 	return gran
 }
@@ -268,34 +262,91 @@ func (api *CMRSearchAPI) SearchGranules(ctx context.Context, params *SearchGranu
 
 type GranuleResult = ScrollResult[Granule]
 
+type archiveInfo struct {
+	Size        string
+	Checksum    string
+	ChecksumAlg string
+}
+
 // decodeArchiveInfo parses Size, Checksum and ChecksumAlg out of an array of archive info, iff
 // the archive info has a name and it matches the download url name.
 //
 // If there are multiple archive infos with a matching name the first available values will be
 // used in combination for size and checksum.
-func decodeArchiveInfo(gran *Granule, archiveInfo []gjson.Result) {
-	for _, ar := range archiveInfo {
+func decodeArchiveInfo(docs []gjson.Result) map[string]archiveInfo {
+	infos := map[string]archiveInfo{}
+
+	for _, ar := range docs {
 
 		// Have to have a name
 		name := ar.Get("Name").String()
-		if name != gran.Name {
+		if name == "" {
 			continue
 		}
 
-		if gran.Size == "" {
+		var info archiveInfo
+		if x, ok := infos[name]; ok {
+			info = x
+		} else {
+			info = archiveInfo{}
+		}
+
+		if info.Size == "" {
 			// Either SizeInBytes or Size w/ SizeUnits
 			sizeInBytes := ar.Get("SizeInBytes").Int()
 			size := ar.Get("Size").Int()
 			if sizeInBytes != 0 {
-				gran.Size = ByteCountSI(sizeInBytes)
+				info.Size = ByteCountSI(sizeInBytes)
 			} else if size != 0 {
-				gran.Size = strings.TrimSpace(fmt.Sprintf("%v %v", size, ar.Get("SizeUnits").String()))
+				info.Size = strings.TrimSpace(fmt.Sprintf("%v %v", size, ar.Get("SizeUnits").String()))
 			}
 		}
 
-		if gran.Checksum == "" {
-			gran.Checksum = strings.TrimSpace(ar.Get("Checksum.Value").String())
-			gran.ChecksumAlg = strings.TrimSpace(ar.Get("Checksum.Algorithm").String())
+		if info.Checksum == "" {
+			info.Checksum = strings.TrimSpace(ar.Get("Checksum.Value").String())
+			info.ChecksumAlg = strings.TrimSpace(ar.Get("Checksum.Algorithm").String())
 		}
+
+		infos[name] = info
+	}
+
+	return infos
+}
+
+// Find all files contained in item.
+//
+// Files are identified by getting all the GET DATA and GET DATA Via DIRECT ACCESS urls
+// and matching them up by URL basename. Size and checksum are determined by using the parsed
+// name to lookup archive info.
+func decodeFiles(gran *Granule, item gjson.Result) {
+	files := map[string]File{}
+	for name, url := range findDownloadURLs(&item, false) {
+		if _, ok := files[name]; !ok {
+			files[name] = File{
+				Name:       name,
+				GetDataURL: url,
+			}
+		}
+	}
+	for name, url := range findDownloadURLs(&item, true) {
+		if _, ok := files[name]; !ok {
+			files[name] = File{
+				Name:         name,
+				GetDataDAURL: url,
+			}
+		} else {
+			file := files[name]
+			file.GetDataDAURL = url
+			files[name] = file
+		}
+	}
+
+	archiveInfos := decodeArchiveInfo(item.Get("umm.DataGranule.ArchiveAndDistributionInformation").Array())
+	for name, file := range files {
+		info := archiveInfos[name]
+		file.Size = info.Size
+		file.Checksum = info.Checksum
+		file.ChecksumAlg = info.ChecksumAlg
+		gran.Files = append(gran.Files, file)
 	}
 }

@@ -79,7 +79,10 @@ func Test_newGranuleFromUMM(t *testing.T) {
 				zult := gjson.Parse(test.Body)
 				gran := newGranuleFromUMM(zult)
 
-				require.Equal(t, expected, gran.Name)
+				require.Len(t, gran.Files, 1)
+
+				file := gran.Files[0]
+				require.Equal(t, expected, file.Name)
 			})
 		}
 	})
@@ -95,12 +98,15 @@ func Test_newGranuleFromUMM(t *testing.T) {
 
 		gran := newGranuleFromUMM(zult)
 
-		require.Equal(t, "AERDT_L2_VIIRS_SNPP.A2023117.1654.011.nrt.nc", gran.Name)
-		require.Equal(t, "7.0 MB", gran.Size)
-		require.Equal(t, "3967c4c9d5768e4eff7e1b508b9011f2", gran.Checksum)
-		require.Equal(t, "MD5", gran.ChecksumAlg)
-		require.Equal(t, "https://sips-data.ssec.wisc.edu/nrt/47503027/AERDT_L2_VIIRS_SNPP.A2023117.1654.011.nrt.nc", gran.GetDataURL)
-		require.Equal(t, "", gran.GetDataDAURL)
+		require.Len(t, gran.Files, 1, "Expected a single file for granule")
+		file := gran.Files[0]
+
+		require.Equal(t, "AERDT_L2_VIIRS_SNPP.A2023117.1654.011.nrt.nc", file.Name)
+		require.Equal(t, "7.0 MB", file.Size)
+		require.Equal(t, "3967c4c9d5768e4eff7e1b508b9011f2", file.Checksum)
+		require.Equal(t, "MD5", file.ChecksumAlg)
+		require.Equal(t, "https://sips-data.ssec.wisc.edu/nrt/47503027/AERDT_L2_VIIRS_SNPP.A2023117.1654.011.nrt.nc", file.GetDataURL)
+		require.Equal(t, "", file.GetDataDAURL)
 		require.Equal(t, "ASIPS:AERDT_L2_VIIRS_SNPP_NRT:1682614440", gran.NativeID)
 		require.Equal(t, "1", gran.RevisionID)
 		require.Equal(t, "G2669133699-ASIPS", gran.ConceptID)
@@ -123,10 +129,12 @@ func Test_newGranuleFromUMM(t *testing.T) {
 		require.True(t, zult.Exists())
 
 		gran := newGranuleFromUMM(zult)
+		require.Len(t, gran.Files, 1)
+		file := gran.Files[0]
 
-		require.Equal(t, "MD5", gran.ChecksumAlg)
-		require.Equal(t, "3967c4c9d5768e4eff7e1b508b9011f2", gran.Checksum)
-		require.Equal(t, "7.0 MB", gran.Size)
+		require.Equal(t, "MD5", file.ChecksumAlg)
+		require.Equal(t, "3967c4c9d5768e4eff7e1b508b9011f2", file.Checksum)
+		require.Equal(t, "7.0 MB", file.Size)
 	})
 }
 
@@ -183,9 +191,6 @@ func TestSearchGranules(t *testing.T) {
 }
 
 func testDecodeArchiveInfo(t *testing.T) {
-	gran := Granule{
-		Name: "CAL_LID_L1-Standard-V4-51.2016-08-31T23-21-32ZD.hdf",
-	}
 	ar := gjson.Parse(`
     [
       {
@@ -206,14 +211,22 @@ func testDecodeArchiveInfo(t *testing.T) {
           "Value": "3e84cf5f8ffb0e97627ff9462cec8534"
         },
         "Name": "CAL_LID_L1-Standard-V4-51.2016-08-31T23-21-32ZD.hdf.met",
-        "Size": 8.2255859375,
+        "Size": 8.0,
         "SizeUnit": "KB"
       }
     ]
   `)
-	decodeArchiveInfo(&gran, ar.Array())
+	infos := decodeArchiveInfo(ar.Array())
 
-	require.Equal(t, "999 MB", gran.Size)
-	require.Equal(t, "MD5", gran.ChecksumAlg)
-	require.Equal(t, "ffffffffffffffffffffffffffffffff", gran.Checksum)
+	require.Len(t, infos, 2)
+
+	info := infos["CAL_LID_L1-Standard-V4-51.2016-08-31T23-21-32ZD.hdf"]
+	require.Equal(t, "999 MB", info.Size)
+	require.Equal(t, "MD5", info.ChecksumAlg)
+	require.Equal(t, "ffffffffffffffffffffffffffffffff", info.Checksum)
+
+	info = infos["CAL_LID_L1-Standard-V4-51.2016-08-31T23-21-32ZD.hdf.met"]
+	require.Equal(t, "8.0 KB", info.Size)
+	require.Equal(t, "MD5", info.ChecksumAlg)
+	require.Equal(t, "3e84cf5f8ffb0e97627ff9462cec8534", info.Checksum)
 }
