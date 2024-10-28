@@ -1,0 +1,60 @@
+{
+  "hits": 1,
+  "took": 142,
+  "items": [
+    {
+      "meta": {
+        "concept-type": "granule",
+        "concept-id": "G2669133699-ASIPS",
+        "revision-id": 1,
+        "native-id": "ASIPS:AERDT_L2_VIIRS_SNPP_NRT:1682614440",
+        "provider-id": "ASIPS",
+        "format": "application/vnd.nasa.cmr.umm+json",
+        "revision-date": "2023-04-27T19:29:07.960Z"
+      },
+      "umm": {
+        "GranuleUR": "ASIPS:AERDT_L2_VIIRS_SNPP_NRT:1682614440",
+        "DataGranule": {
+          "ArchiveAndDistributionInformation": [
+            {
+              "Name": "AERDT_L2_VIIRS_SNPP.A2023117.1654.011.nrt.nc",
+              "Checksum": {
+                "Value": "22222222222222222222222222222222",
+                "Algorithm": "MD5"
+              },
+              "Format": "netCDF-4",
+              "MimeType": "application/x-netcdf",
+              "SizeInBytes": 222 
+            },
+            {
+              "Name": "AERDT_L2_VIIRS_SNPP.A2023117.1654.011.nrt.nc.met",
+              "Checksum": {
+                "Value": "11111111111111111111111111111111",
+                "Algorithm": "MD5"
+              },
+              "SizeInBytes": 111 
+            },
+            {
+              "Name": "I_AM_IGNORED",
+              "Checksum": {
+                "Value": "ffffffffffffffffffffffffffffffff",
+                "Algorithm": "MD5"
+              },
+              "SizeInBytes": 0
+            }
+          ]
+        },
+        "RelatedUrls": [
+          {
+            "URL": "https://sips-data.ssec.wisc.edu/nrt/47503027/AERDT_L2_VIIRS_SNPP.A2023117.1654.011.nrt.nc",
+            "Type": "GET DATA"
+          },
+          {
+            "URL": "https://sips-data.ssec.wisc.edu/nrt/47503027/AERDT_L2_VIIRS_SNPP.A2023117.1654.011.nrt.nc.met",
+            "Type": "GET DATA"
+          }
+        ]
+      }
+    }
+  ]
+}

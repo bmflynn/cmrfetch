@@ -77,17 +77,44 @@ func Test_newGranuleFromUMM(t *testing.T) {
 			t.Run(test.Name, func(t *testing.T) {
 				require.True(t, gjson.Valid(test.Body))
 				zult := gjson.Parse(test.Body)
-				gran := newGranuleFromUMM(zult)
+				grans := newGranulesFromUMM(zult)
 
-				require.Len(t, gran.Files, 1)
+				require.Len(t, grans, 1)
 
-				file := gran.Files[0]
-				require.Equal(t, expected, file.Name)
+				require.Equal(t, expected, grans[0].Name)
 			})
 		}
 	})
 
-	t.Run("aerdt umm", func(t *testing.T) {
+	t.Run("multi granule", func(t *testing.T) {
+		t.Run("nominal", func(t *testing.T) {
+			dat, err := os.ReadFile("testdata/aerdt_granules_multigranule1.umm_json")
+			require.NoError(t, err)
+			body := string(dat)
+			require.True(t, gjson.Valid(body))
+
+			zult := gjson.Get(body, "items.0")
+			require.True(t, zult.Exists())
+
+			grans := newGranulesFromUMM(zult)
+			require.Len(t, grans, 2, "Expected a 2 granules, one for each url/archive info")
+		})
+
+		t.Run("ignores extra archive info", func(t *testing.T) {
+			dat, err := os.ReadFile("testdata/aerdt_granules_multigranule2.umm_json")
+			require.NoError(t, err)
+			body := string(dat)
+			require.True(t, gjson.Valid(body))
+
+			zult := gjson.Get(body, "items.0")
+			require.True(t, zult.Exists())
+
+			grans := newGranulesFromUMM(zult)
+			require.Len(t, grans, 2, "Expected a 2 granules, one for each url/archive info")
+		})
+	})
+
+	t.Run("asips aerdt", func(t *testing.T) {
 		dat, err := os.ReadFile("testdata/aerdt_granules.umm_json")
 		require.NoError(t, err)
 		body := string(dat)
@@ -96,17 +123,17 @@ func Test_newGranuleFromUMM(t *testing.T) {
 		zult := gjson.Get(body, "items.0")
 		require.True(t, zult.Exists())
 
-		gran := newGranuleFromUMM(zult)
+		grans := newGranulesFromUMM(zult)
 
-		require.Len(t, gran.Files, 1, "Expected a single file for granule")
-		file := gran.Files[0]
+		require.Len(t, grans, 1, "Expected a single file for granule")
+		gran := grans[0]
 
-		require.Equal(t, "AERDT_L2_VIIRS_SNPP.A2023117.1654.011.nrt.nc", file.Name)
-		require.Equal(t, "7.0 MB", file.Size)
-		require.Equal(t, "3967c4c9d5768e4eff7e1b508b9011f2", file.Checksum)
-		require.Equal(t, "MD5", file.ChecksumAlg)
-		require.Equal(t, "https://sips-data.ssec.wisc.edu/nrt/47503027/AERDT_L2_VIIRS_SNPP.A2023117.1654.011.nrt.nc", file.GetDataURL)
-		require.Equal(t, "", file.GetDataDAURL)
+		require.Equal(t, "AERDT_L2_VIIRS_SNPP.A2023117.1654.011.nrt.nc", gran.Name)
+		require.Equal(t, "7.0 MB", gran.Size)
+		require.Equal(t, "3967c4c9d5768e4eff7e1b508b9011f2", gran.Checksum)
+		require.Equal(t, "MD5", gran.ChecksumAlg)
+		require.Equal(t, "https://sips-data.ssec.wisc.edu/nrt/47503027/AERDT_L2_VIIRS_SNPP.A2023117.1654.011.nrt.nc", gran.GetDataURL)
+		require.Equal(t, "", gran.GetDataDAURL)
 		require.Equal(t, "ASIPS:AERDT_L2_VIIRS_SNPP_NRT:1682614440", gran.NativeID)
 		require.Equal(t, "1", gran.RevisionID)
 		require.Equal(t, "G2669133699-ASIPS", gran.ConceptID)
@@ -118,24 +145,6 @@ func Test_newGranuleFromUMM(t *testing.T) {
 		}, gran.BoundingBox)
 	})
 
-	// Ensure the archive info selected is the one matching the dowload url filename
-	t.Run("archive info selection", func(t *testing.T) {
-		dat, err := os.ReadFile("testdata/aerdt_granules.umm_json")
-		require.NoError(t, err)
-		body := string(dat)
-		require.True(t, gjson.Valid(body))
-
-		zult := gjson.Get(body, "items.0")
-		require.True(t, zult.Exists())
-
-		gran := newGranuleFromUMM(zult)
-		require.Len(t, gran.Files, 1)
-		file := gran.Files[0]
-
-		require.Equal(t, "MD5", file.ChecksumAlg)
-		require.Equal(t, "3967c4c9d5768e4eff7e1b508b9011f2", file.Checksum)
-		require.Equal(t, "7.0 MB", file.Size)
-	})
 }
 
 func TestSearchGranules(t *testing.T) {

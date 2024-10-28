@@ -24,20 +24,18 @@ func zultsToRequests(granules internal.GranuleResult, destdir string, clobber bo
 	go func() {
 		defer close(requests)
 		for gran := range granules.Ch {
-			for _, file := range gran.Files {
-				request := internal.DownloadRequest{
-					// Use grnaule name in dest, b/c who knows what the base of the URL will be
-					Dest:        filepath.Join(destdir, file.Name),
-					URL:         file.GetDataURL,
-					Checksum:    file.Checksum,
-					ChecksumAlg: file.ChecksumAlg,
-				}
-				if !clobber && internal.Exists(request.Dest) {
-					log.Printf("exists %s", request.Dest)
-					continue
-				}
-				requests <- request
+			request := internal.DownloadRequest{
+				// Use grnaule name in dest, b/c who knows what the base of the URL will be
+				Dest:        filepath.Join(destdir, gran.Name),
+				URL:         gran.GetDataURL,
+				Checksum:    gran.Checksum,
+				ChecksumAlg: gran.ChecksumAlg,
 			}
+			if !clobber && internal.Exists(request.Dest) {
+				log.Printf("exists %s", request.Dest)
+				continue
+			}
+			requests <- request
 		}
 	}()
 	return requests
