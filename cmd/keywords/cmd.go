@@ -2,10 +2,10 @@ package keywords
 
 import (
 	"context"
-	"log"
 	"os"
 
 	"github.com/bmflynn/cmrfetch/internal"
+	"github.com/bmflynn/cmrfetch/internal/log"
 	"github.com/jedib0t/go-pretty/v6/table"
 	"github.com/spf13/cobra"
 )
@@ -47,12 +47,9 @@ correct value.
 		verbose, err := cmd.Flags().GetBool("verbose")
 		failOnError(err)
 
-		var logger *log.Logger
-		if verbose {
-			logger = log.New(os.Stderr, "", log.LstdFlags)
-		}
+		log.SetVerbose(verbose)
 
-		api := internal.NewCMRSearchAPI(logger)
+		api := internal.NewCMRSearchAPI()
 
 		zult, err := api.SearchFacets(context.Background(), args[0], nil)
 		if err != nil {

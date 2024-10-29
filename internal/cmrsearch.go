@@ -5,12 +5,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"strconv"
 	"strings"
 	"sync"
 
+	"github.com/bmflynn/cmrfetch/internal/log"
 	"github.com/tidwall/gjson"
 )
 
@@ -23,21 +23,13 @@ type CMRSearchAPI struct {
 	url      string
 	client   *http.Client
 	pageSize int
-	log      *log.Logger
 }
 
-func NewCMRSearchAPI(logger *log.Logger) *CMRSearchAPI {
+func NewCMRSearchAPI() *CMRSearchAPI {
 	return &CMRSearchAPI{
 		url:      defaultCMRSearchURL,
 		client:   http.DefaultClient,
 		pageSize: 200,
-		log:      logger,
-	}
-}
-
-func (api *CMRSearchAPI) debug(msg string, args ...any) {
-	if api.log != nil {
-		api.log.Printf(msg, args...)
 	}
 }
 
@@ -72,7 +64,7 @@ func (r ScrollResult[T]) Hits() int {
 }
 
 func (api *CMRSearchAPI) Get(ctx context.Context, url string) (ScrollResult[gjson.Result], error) {
-	api.debug("method=GET url=%s", url)
+	log.Debug("method=GET url=%s", url)
 
 	result := newScrollResult[gjson.Result]()
 
@@ -154,7 +146,7 @@ func (api *CMRSearchAPI) newCMRError(resp *http.Response) error {
 	if err := json.Unmarshal(body, &errs); err == nil {
 		cmrErr.Err = fmt.Errorf("%s", strings.Join(errs.Errors, "; "))
 	} else {
-		api.debug("failed to unmarshal errors: %s: %s", err, body)
+		log.Debug("failed to unmarshal errors: %s: %s", err, body)
 	}
 	return cmrErr
 }

@@ -3,11 +3,11 @@ package collections
 import (
 	"context"
 	"fmt"
-	"log"
 	"os"
 	"strings"
 
 	"github.com/bmflynn/cmrfetch/internal"
+	"github.com/bmflynn/cmrfetch/internal/log"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 )
@@ -102,11 +102,8 @@ var Cmd = &cobra.Command{
 		verbose, err := flags.GetBool("verbose")
 		failOnError(err)
 
-		var logger *log.Logger
-		if verbose {
-			logger = log.New(os.Stderr, "", log.LstdFlags)
-		}
-		api := internal.NewCMRSearchAPI(logger)
+		log.SetVerbose(verbose)
+		api := internal.NewCMRSearchAPI()
 
 		var writer outputWriter
 		switch output {

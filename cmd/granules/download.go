@@ -4,11 +4,11 @@ import (
 	"bufio"
 	"context"
 	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 
 	"github.com/bmflynn/cmrfetch/internal"
+	"github.com/bmflynn/cmrfetch/internal/log"
 )
 
 const (
@@ -46,7 +46,7 @@ func doDownload(
 	api *internal.CMRSearchAPI,
 	params *internal.SearchGranuleParams,
 	destdir, token string,
-	netrc, clobber, yes, verbose bool,
+	netrc, clobber, yes bool,
 	concurrency int,
 ) error {
 	zult, err := api.SearchGranules(context.Background(), params)
@@ -76,9 +76,7 @@ func doDownload(
 	}
 
 	token = internal.ResolveEDLToken(token)
-	if verbose {
-		log.Printf("auth netrc:%v edltoken:%v\n", netrc, token != "")
-	}
+	log.Debug("auth netrc:%v edltoken:%v\n", netrc, token != "")
 
 	fetcherFactory := func() (internal.Fetcher, error) {
 		fetcher, err := internal.NewHTTPFetcher(netrc, token)

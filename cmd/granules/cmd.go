@@ -3,13 +3,13 @@ package granules
 import (
 	"context"
 	"fmt"
-	"log"
 	"os"
 	"regexp"
 	"strings"
 	"time"
 
 	"github.com/bmflynn/cmrfetch/internal"
+	"github.com/bmflynn/cmrfetch/internal/log"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 )
@@ -118,15 +118,12 @@ NASA Earthdata Authentication
 			return err
 		}
 
-		var logger *log.Logger
-		if verbose {
-			logger = log.New(os.Stderr, "", log.LstdFlags)
-		}
+		log.SetVerbose(verbose)
 
-		api := internal.NewCMRSearchAPI(logger)
+		api := internal.NewCMRSearchAPI()
 
 		if destdir != "" {
-			err = doDownload(context.TODO(), api, params, destdir, token, netrc, clobber, yes, verbose, concurrency)
+			err = doDownload(context.TODO(), api, params, destdir, token, netrc, clobber, yes, concurrency)
 		} else {
 			err = do(api, params, output, fields, yes)
 		}

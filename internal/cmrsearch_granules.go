@@ -2,12 +2,14 @@ package internal
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/url"
 	"path"
 	"strings"
 	"time"
 
+	"github.com/bmflynn/cmrfetch/internal/log"
 	"github.com/tidwall/gjson"
 )
 
@@ -193,7 +195,7 @@ func newGranulesFromUMM(zult gjson.Result) []Granule {
 
 	granules := []Granule{}
 
-	for _, gran := range decodeGranules(zult) {
+	for _, gran := range findGranules(zult) {
 		gran.ConceptID = zult.Get("meta.concept-id").String()
 		gran.NativeID = zult.Get("meta.native-id").String()
 		gran.RevisionID = zult.Get("meta.revision-id").String()
@@ -268,6 +270,15 @@ type archiveInfo struct {
 	ChecksumAlg string
 }
 
+func (a *archiveInfo) String() string {
+	if b, err := json.Marshal(&a); err == nil {
+		return string(b)
+	}
+	return "archiveInfo{ <unmarshal error> }"
+}
+
+var _ fmt.Stringer = (*archiveInfo)(nil)
+
 // decodeArchiveInfo parses Size, Checksum and ChecksumAlg out of an array of archive info, iff
 // the archive info has a name and it matches the download url name.
 //
@@ -281,6 +292,7 @@ func decodeArchiveInfo(docs []gjson.Result) map[string]archiveInfo {
 		// Have to have a name
 		name := ar.Get("Name").String()
 		if name == "" {
+			log.Debug("skipping archive info w/o name: %v", ar.Str)
 			continue
 		}
 
@@ -292,7 +304,7 @@ func decodeArchiveInfo(docs []gjson.Result) map[string]archiveInfo {
 		}
 
 		if info.Size == "" {
-			// Either SizeInBytes or Size w/ SizeUnit
+			// Either SizeInBytes or Size w/ SizeUnit; SizeInBytes takes precedence
 			sizeInBytes := ar.Get("SizeInBytes").Int()
 			size := ar.Get("Size").Int()
 			if sizeInBytes != 0 {
@@ -318,9 +330,10 @@ func decodeArchiveInfo(docs []gjson.Result) map[string]archiveInfo {
 // The download url may be of type GET DATA or GET DATA Via DIRECT DOWNLOAD. Archive info
 // is added if there exists archive info metadata with the same basename as the download
 // URL.
-func decodeGranules(item gjson.Result) []Granule {
+func findGranules(item gjson.Result) []Granule {
 	files := map[string]Granule{}
 	for name, url := range findDownloadURLs(&item, false) {
+		log.Debug("found granule name=%s type=getdata url=%s", name, url)
 		if _, ok := files[name]; !ok {
 			files[name] = Granule{
 				Name:       name,
@@ -329,12 +342,14 @@ func decodeGranules(item gjson.Result) []Granule {
 		}
 	}
 	for name, url := range findDownloadURLs(&item, true) {
+		log.Debug("found granule name=%s type=getdata_da url=%s", name, url)
 		if _, ok := files[name]; !ok {
 			files[name] = Granule{
 				Name:         name,
 				GetDataDAURL: url,
 			}
 		} else {
+			log.Debug("")
 			file := files[name]
 			file.GetDataDAURL = url
 			files[name] = file
@@ -343,11 +358,15 @@ func decodeGranules(item gjson.Result) []Granule {
 
 	archiveInfos := decodeArchiveInfo(item.Get("umm.DataGranule.ArchiveAndDistributionInformation").Array())
 	for name, gran := range files {
-		info := archiveInfos[name]
-		gran.Size = info.Size
-		gran.Checksum = info.Checksum
-		gran.ChecksumAlg = info.ChecksumAlg
-		files[name] = gran
+		if info, ok := archiveInfos[name]; ok {
+			log.Debug("archive info for name=%s: %s", name, info.String())
+			gran.Size = info.Size
+			gran.Checksum = info.Checksum
+			gran.ChecksumAlg = info.ChecksumAlg
+			files[name] = gran
+		} else {
+			log.Debug("no archive info for name=%s", name)
+		}
 	}
 
 	granules := []Granule{}
