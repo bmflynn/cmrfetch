@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Check for inadvertent HTML content when downloading HTML
+- Check for inadvertent HTML content when downloading files
 
 ### Fixed
 
