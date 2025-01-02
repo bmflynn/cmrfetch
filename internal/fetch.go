@@ -12,9 +12,12 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"regexp"
 	"runtime"
 	"strings"
 )
+
+const numPrefixBytes = 1000
 
 type Fetcher func(ctx context.Context, url string, w io.Writer) (int64, error)
 
@@ -46,15 +49,27 @@ type writerHasher struct {
 	io.Writer
 	hash hash.Hash
 	size int64
+	/// used to determine if written file is HTML
+	prefix []byte
 }
 
 func (wh *writerHasher) Write(buf []byte) (int, error) {
 	n, err := wh.Writer.Write(buf)
+	if len(wh.prefix) < numPrefixBytes {
+		wh.prefix = append(wh.prefix, buf[:n]...)
+	}
 	if wh.hash != nil {
 		wh.hash.Write(buf[:n])
 	}
 	wh.size += int64(n)
 	return n, err
+}
+
+// Return true if the written prefix looks like HTML, which may indicate the download resulted
+// in a bad redirect to an auth page.
+func (wh *writerHasher) ProbableHtml() bool {
+	rx := regexp.MustCompile(`\s*`)
+	return strings.Contains(rx.ReplaceAllString(string(wh.prefix), ""), "<html")
 }
 
 func (wh *writerHasher) Checksum() string {

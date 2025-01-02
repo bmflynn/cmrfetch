@@ -4,7 +4,9 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"path"
 	"path/filepath"
+	"strings"
 	"sync"
 	"time"
 )
@@ -107,6 +109,11 @@ func downloader(
 				return err
 			}
 			dest.Close() // Close before checksumming
+
+			if strings.HasPrefix(path.Ext(req.URL), ".htm") && w.ProbableHtml() {
+				return fmt.Errorf("probable HTML download content, possibly indicating a bad auth redirect")
+			}
+
 			zult.Checksum = w.Checksum()
 			zult.Size = w.size
 			zult.Duration = time.Since(start)

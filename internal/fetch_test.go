@@ -57,6 +57,30 @@ func Test_writerHasher(t *testing.T) {
 
 		require.Empty(t, wh.Checksum(), "checksum should be empty when hash is nil")
 	})
+
+	t.Run("probablehtml", func(t *testing.T) {
+		t.Run("true", func(t *testing.T) {
+			wh := writerHasher{
+				Writer: bytes.NewBuffer(nil),
+			}
+			_, err := wh.Write([]byte(`xxx  <    
+
+      html  xxx
+
+... `))
+			require.NoError(t, err)
+			require.True(t, wh.ProbableHtml(), "Expected to detect html")
+		})
+
+		t.Run("false", func(t *testing.T) {
+			wh := writerHasher{
+				Writer: bytes.NewBuffer(nil),
+			}
+			_, err := wh.Write([]byte("xxx   xxx"))
+			require.NoError(t, err)
+			require.False(t, wh.ProbableHtml(), "Expected not to detect html")
+		})
+	})
 }
 
 func Test_findNetrc(t *testing.T) {
