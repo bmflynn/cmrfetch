@@ -124,11 +124,21 @@ func TestHTTPFetcher(t *testing.T) {
 	})
 }
 
-func Test_validateResponse(t *testing.T) {
-	req := httptest.NewRequest("GET", "http://localhost/", nil)
-	resp := &http.Response{
-		Request: httptest.NewRequest("GET", "http://nope/", nil),
-	}
+func TestHTTPFetcherRequest(t *testing.T) {
+	fetcher, err := NewHTTPFetcher(false, "XXX")
+	require.NoError(t, err)
 
-	require.Error(t, validateResponse(req, resp))
+	t.Run("token with non-https is error", func(t *testing.T) {
+		req, err := fetcher.newRequest(context.TODO(), "http://server/path/file.ext")
+		require.Nil(t, req)
+		require.Error(t, err, "expected error with http scheme")
+	})
+
+	t.Run("token header present", func(t *testing.T) {
+		req, err := fetcher.newRequest(context.TODO(), "https://server/path/file.ext")
+		require.NotNil(t, req)
+		require.NoError(t, err)
+
+		require.Equal(t, "Bearer XXX", req.Header.Get("Authorization"))
+	})
 }

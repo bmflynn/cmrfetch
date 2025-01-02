@@ -16,7 +16,6 @@ import (
 )
 
 var defaultNetrcFinder = findNetrc
-var edlToken = ""
 
 type FailedDownload struct {
 	RequestID    string
@@ -64,14 +63,6 @@ func ResolveEDLToken(token string) string {
 	return resolvedToken
 }
 
-// Sets token auth header
-func newRedirectWithToken(bearer string) (func(*http.Request, []*http.Request) error, error) {
-	return func(req *http.Request, via []*http.Request) error {
-		req.Header.Add("Authorization", "Bearer "+bearer)
-		return nil
-	}, nil
-}
-
 // Sets basic auth on redirect if the host is in the netrc file.
 func newRedirectWithNetrcCredentials() (func(*http.Request, []*http.Request) error, error) {
 	fpath, err := defaultNetrcFinder()
@@ -101,6 +92,8 @@ func newRedirectWithNetrcCredentials() (func(*http.Request, []*http.Request) err
 type HTTPFetcher struct {
 	client   *http.Client
 	readSize int64
+	// If provided an authorization header is added to every request
+	bearerToken string
 }
 
 func NewHTTPFetcher(netrc bool, edlToken string) (*HTTPFetcher, error) {
@@ -118,17 +111,28 @@ func NewHTTPFetcher(netrc bool, edlToken string) (*HTTPFetcher, error) {
 		client.Jar = jar
 		client.CheckRedirect, err = newRedirectWithNetrcCredentials()
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("configuring netrc token redirect: %w", err)
 		}
 	}
 	return &HTTPFetcher{
-		client:   client,
-		readSize: 2 << 19,
+		client:      client,
+		readSize:    2 << 19,
+		bearerToken: edlToken,
 	}, nil
 }
 
 func (f *HTTPFetcher) newRequest(ctx context.Context, url string) (*http.Request, error) {
-	return http.NewRequestWithContext(ctx, "GET", url, nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
+	if err != nil {
+		return nil, err
+	}
+	if f.bearerToken != "" {
+		if req.URL.Scheme != "https" {
+			return nil, fmt.Errorf("refusing to add bearer token to non-https url %s", req.URL)
+		}
+		req.Header.Add("Authorization", "Bearer "+f.bearerToken)
+	}
+	return req, nil
 }
 
 // Fetch url to destdir using url's basename as the filename and update hash with the file
@@ -137,10 +141,6 @@ func (f *HTTPFetcher) Fetch(ctx context.Context, url string, w io.Writer) (int64
 	req, err := f.newRequest(ctx, url)
 	if err != nil {
 		return 0, err
-	}
-
-	if edlToken != "" {
-		req.Header.Add("Authorization", "Bearer "+edlToken)
 	}
 
 	resp, err := f.client.Do(req)
@@ -153,10 +153,6 @@ func (f *HTTPFetcher) Fetch(ctx context.Context, url string, w io.Writer) (int64
 		return 0, err
 	}
 	defer resp.Body.Close()
-
-	// if err := validateResponse(req, resp); err != nil {
-	// 	return 0, err
-	// }
 
 	var size int64
 	buf := make([]byte, f.readSize)
@@ -178,13 +174,4 @@ func (f *HTTPFetcher) Fetch(ctx context.Context, url string, w io.Writer) (int64
 		}
 	}
 	return size, nil
-}
-
-func validateResponse(req *http.Request, resp *http.Response) error {
-	wanted := req.URL.Hostname()
-	found := resp.Request.URL.Hostname()
-	if wanted != found {
-		return fmt.Errorf("probable auth redirect error; expected host %s, found %s", wanted, found)
-	}
-	return nil
 }
