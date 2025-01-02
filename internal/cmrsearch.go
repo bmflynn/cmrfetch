@@ -68,7 +68,9 @@ func (api *CMRSearchAPI) Get(ctx context.Context, url string) (ScrollResult[gjso
 
 	result := newScrollResult[gjson.Result]()
 
+	// only ever sent to once with initial hits value
 	hitsCh := make(chan int, 1)
+	sentHits := false
 	go func() {
 		defer close(result.Ch)
 		defer close(hitsCh)
@@ -99,9 +101,8 @@ func (api *CMRSearchAPI) Get(ctx context.Context, url string) (ScrollResult[gjso
 				result.setErr(fmt.Errorf("failed to parse cmr-hits header as int: %s", resp.Header.Get("cmr-hits")))
 				return
 			}
-			if hitsCh != nil {
+			if !sentHits {
 				hitsCh <- hits
-				hitsCh = nil // set hits to nil so we don't send again
 			}
 
 			body, err := io.ReadAll(resp.Body)
