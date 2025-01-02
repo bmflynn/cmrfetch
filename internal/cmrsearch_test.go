@@ -20,7 +20,8 @@ func TestCMRSearchAPI(t *testing.T) {
 				w.Header().Set("cmr-hits", hits)
 			}
 			w.WriteHeader(status)
-			w.Write([]byte(body))
+			_, err := w.Write([]byte(body))
+			require.NoError(t, err)
 		}))
 		url := fmt.Sprintf("http://%s", ts.Listener.Addr())
 		return ts, url
@@ -29,7 +30,7 @@ func TestCMRSearchAPI(t *testing.T) {
 	doGet := func(t *testing.T, url string) ScrollResult[gjson.Result] {
 		t.Helper()
 
-		api := NewCMRSearchAPI(nil)
+		api := NewCMRSearchAPI()
 		// make sure we're not waiting long
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 		defer cancel()

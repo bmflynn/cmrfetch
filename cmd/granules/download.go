@@ -58,7 +58,9 @@ func doDownload(
 
 	if !yes && zult.Hits() > maxResultsWithoutPrompt {
 		fmt.Printf("There are more than %v, CTRL-C to cancel or ENTER to continue\n", maxResultsWithoutPrompt)
-		bufio.NewReader(os.Stdin).ReadBytes('\n')
+		if _, err := bufio.NewReader(os.Stdin).ReadBytes('\n'); err != nil {
+			return err
+		}
 	}
 
 	if internal.Exists(destdir) {

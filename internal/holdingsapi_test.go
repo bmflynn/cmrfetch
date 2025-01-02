@@ -3,7 +3,6 @@ package internal
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -70,7 +69,6 @@ func testCacheDir(t *testing.T) (string, func()) {
 }
 
 func Test_getCachedProviderHoldngs(t *testing.T) {
-
 	t.Run("cache dir missing is ok", func(t *testing.T) {
 		_, cleanup := testCacheDir(t)
 		defer cleanup()
@@ -85,7 +83,7 @@ func Test_getCachedProviderHoldngs(t *testing.T) {
 	t.Run("not a dir is err", func(t *testing.T) {
 		dir, cleanup := testCacheDir(t)
 		defer cleanup()
-		err := ioutil.WriteFile(filepath.Join(dir, "cmrfetch"), nil, 0o644)
+		err := os.WriteFile(filepath.Join(dir, "cmrfetch"), nil, 0o644)
 		require.NoError(t, err)
 
 		zult, mtime, err := getCachedProviderHoldings()
@@ -112,7 +110,7 @@ func Test_getCachedProviderHoldngs(t *testing.T) {
 		err := os.MkdirAll(filepath.Join(dir, "cmrfetch"), 0o755)
 		require.NoError(t, err)
 		fpath := filepath.Join(dir, "cmrfetch", "provider_holdings.json")
-		require.NoError(t, ioutil.WriteFile(fpath, nil, 0o000))
+		require.NoError(t, os.WriteFile(fpath, nil, 0o000))
 
 		zult, mtime, err := getCachedProviderHoldings()
 		require.Nil(t, zult)
@@ -126,7 +124,7 @@ func Test_getCachedProviderHoldngs(t *testing.T) {
 		err := os.MkdirAll(filepath.Join(dir, "cmrfetch"), 0o755)
 		require.NoError(t, err)
 		fpath := filepath.Join(dir, "cmrfetch", "provider_holdings.json")
-		require.NoError(t, ioutil.WriteFile(fpath, []byte(`[]`), 0o644))
+		require.NoError(t, os.WriteFile(fpath, []byte(`[]`), 0o644))
 
 		zult, mtime, err := getCachedProviderHoldings()
 		require.Len(t, zult, 0)
@@ -166,7 +164,7 @@ func TestGetProviderHoldings(t *testing.T) {
 	defer cleanup()
 
 	svr := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte(`
+		_, err := w.Write([]byte(`
 [
   {
     "concept-id": "C1",
@@ -187,6 +185,7 @@ func TestGetProviderHoldings(t *testing.T) {
     "granule-count": 1
   }
 ]`))
+		require.NoError(t, err)
 	}))
 	defer svr.Close()
 	origURL := defaultHoldingsURL

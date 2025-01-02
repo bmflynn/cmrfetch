@@ -3,7 +3,6 @@ package internal
 import (
 	"bytes"
 	"crypto/md5"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -85,7 +84,8 @@ func Test_findNetrc(t *testing.T) {
 		defer os.RemoveAll(dir)
 
 		path := filepath.Join(dir, ".netrc")
-		ioutil.WriteFile(path, []byte("xxx"), 0o644)
+		err = os.WriteFile(path, []byte("xxx"), 0o644)
+		require.NoError(t, err)
 		t.Setenv("HOME", dir)
 
 		gotpath, err := findNetrc()

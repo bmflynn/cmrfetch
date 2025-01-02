@@ -9,12 +9,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func failOnError(err error) {
-	if err != nil {
-		panic(err)
-	}
-}
-
 var rootCmd = &cobra.Command{
 	Use:   "cmrfetch",
 	Short: "Search for and download NASA Earthdata collections and granules",

@@ -125,7 +125,7 @@ NASA Earthdata Authentication
 		if destdir != "" {
 			err = doDownload(context.TODO(), api, params, destdir, token, netrc, clobber, yes, concurrency)
 		} else {
-			err = do(api, params, output, fields, yes)
+			err = do(api, params, output, fields)
 		}
 		if err != nil {
 			log.Fatalf("failed! %s", err)
@@ -181,11 +181,12 @@ func init() {
 			"results and must load all results in memory before rendering. Make sure to provide enough "+
 			"filters to limit the result set to a reasonable size or use json or csv output.")
 
-	flags.MarkHidden("shortname")
-	flags.MarkDeprecated("shortname", "Provide the collection concept id instead")
+	cobra.CheckErr(flags.MarkHidden("shortname"))
+	cobra.CheckErr(flags.MarkDeprecated("yes", "Not used and will be ignored"))
+	cobra.CheckErr(flags.MarkDeprecated("shortname", "Provide the collection concept id instead"))
 }
 
-func do(api *internal.CMRSearchAPI, params *internal.SearchGranuleParams, writerName string, fields []string, yes bool) error {
+func do(api *internal.CMRSearchAPI, params *internal.SearchGranuleParams, writerName string, fields []string) error {
 	var writer outputWriter
 	switch writerName {
 	case "short":

@@ -57,7 +57,7 @@ func writeCollection(zult internal.CollectionResult, w io.Writer, long bool) err
 			t.SetCaption(col["abstract"])
 		}
 		t.Render()
-		w.Write([]byte{'\n'})
+		_, _ = w.Write([]byte{'\n'})
 	}
 	return zult.Err()
 }

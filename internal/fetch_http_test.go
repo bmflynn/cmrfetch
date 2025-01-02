@@ -5,7 +5,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -60,7 +59,8 @@ func mockNetrc(t *testing.T) func() {
 
 	netrc, err := os.CreateTemp("", "")
 	require.NoError(t, err)
-	ioutil.WriteFile(netrc.Name(), []byte("machine testhost.com login LOGIN password PASSWORD"), 0o644)
+	err = os.WriteFile(netrc.Name(), []byte("machine testhost.com login LOGIN password PASSWORD"), 0o644)
+	require.NoError(t, err)
 
 	orig := defaultNetrcFinder
 	defaultNetrcFinder = func() (string, error) {
@@ -94,7 +94,8 @@ func TestHTTPFetcher(t *testing.T) {
 	t.Run("ok", func(t *testing.T) {
 		body := []byte("xxx")
 		svr := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-			w.Write(body)
+			_, err := w.Write(body)
+			require.NoError(t, err)
 		}))
 		defer svr.Close()
 

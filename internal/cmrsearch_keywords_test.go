@@ -3,7 +3,6 @@ package internal
 import (
 	"context"
 	"fmt"
-	"log"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -19,7 +18,8 @@ func TestSearchFacets(t *testing.T) {
 				w.Header().Set("cmr-hits", hits)
 			}
 			w.WriteHeader(status)
-			w.Write([]byte(body))
+			_, err := w.Write([]byte(body))
+			require.NoError(t, err)
 		}))
 		url := fmt.Sprintf("http://%s", ts.Listener.Addr())
 		origURL := defaultCMRURL
@@ -33,7 +33,7 @@ func TestSearchFacets(t *testing.T) {
 	doGet := func(t *testing.T, val string, types []string) ScrollResult[Facet] {
 		t.Helper()
 
-		api := NewCMRSearchAPI(log.Default())
+		api := NewCMRSearchAPI()
 		// make sure we're not waiting long
 		zult, err := api.SearchFacets(context.Background(), val, types)
 		require.NoError(t, err)

@@ -3,7 +3,6 @@ package internal
 import (
 	"context"
 	"fmt"
-	"log"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -144,7 +143,6 @@ func Test_newGranuleFromUMM(t *testing.T) {
 			"-131.310653687,66.963340759,-92.430793762,55.710681915,-37.703670502,63.907997131,-4.32655859,82.950004578,-131.310653687,66.963340759",
 		}, gran.BoundingBox)
 	})
-
 }
 
 func TestSearchGranules(t *testing.T) {
@@ -155,7 +153,8 @@ func TestSearchGranules(t *testing.T) {
 				w.Header().Set("cmr-hits", hits)
 			}
 			w.WriteHeader(status)
-			w.Write([]byte(body))
+			_, err := w.Write([]byte(body))
+			require.NoError(t, err)
 		}))
 		url := fmt.Sprintf("http://%s", ts.Listener.Addr())
 		origURL := defaultCMRURL
@@ -169,7 +168,7 @@ func TestSearchGranules(t *testing.T) {
 	doGet := func(t *testing.T, params *SearchGranuleParams) ScrollResult[Granule] {
 		t.Helper()
 
-		api := NewCMRSearchAPI(log.Default())
+		api := NewCMRSearchAPI()
 		// make sure we're not waiting long
 		zult, err := api.SearchGranules(context.Background(), params)
 		require.NoError(t, err)
@@ -199,7 +198,7 @@ func TestSearchGranules(t *testing.T) {
 	})
 }
 
-func testDecodeArchiveInfo(t *testing.T) {
+func TestDecodeArchiveInfo(t *testing.T) {
 	ar := gjson.Parse(`
     [
       {
@@ -235,7 +234,7 @@ func testDecodeArchiveInfo(t *testing.T) {
 	require.Equal(t, "ffffffffffffffffffffffffffffffff", info.Checksum)
 
 	info = infos["CAL_LID_L1-Standard-V4-51.2016-08-31T23-21-32ZD.hdf.met"]
-	require.Equal(t, "8.0 KB", info.Size)
+	require.Equal(t, "8 KB", info.Size)
 	require.Equal(t, "MD5", info.ChecksumAlg)
 	require.Equal(t, "3e84cf5f8ffb0e97627ff9462cec8534", info.Checksum)
 }

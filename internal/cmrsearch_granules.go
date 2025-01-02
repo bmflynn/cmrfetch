@@ -13,8 +13,6 @@ import (
 	"github.com/tidwall/gjson"
 )
 
-const notProvided = "Not provided"
-
 func joinFloats(vals []float64) string {
 	s := []string{}
 	for _, v := range vals {
@@ -192,7 +190,6 @@ func findDownloadURLs(zult *gjson.Result, directAccess bool) map[string]string {
 }
 
 func newGranulesFromUMM(zult gjson.Result) []Granule {
-
 	granules := []Granule{}
 
 	for _, gran := range findGranules(zult) {

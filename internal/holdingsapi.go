@@ -12,8 +12,7 @@ import (
 
 var defaultHoldingsURL = "https://cmr.earthdata.nasa.gov/search/provider_holdings.json"
 
-type ProviderCollection struct {
-}
+type ProviderCollection struct{}
 
 /*
   {
@@ -105,7 +104,9 @@ func writeCachedProviderHoldings(providers []Provider) error {
 		return err
 	}
 	dir = filepath.Join(dir, "cmrfetch")
-	os.MkdirAll(dir, 0o755)
+	if err := os.MkdirAll(dir, 0o755); err != nil {
+		return fmt.Errorf("making dir: %w", err)
+	}
 	f, err := os.Create(filepath.Join(dir, "provider_holdings.json"))
 	if err != nil {
 		return err
@@ -132,6 +133,8 @@ func GetProviderHoldings() ([]Provider, error) {
 		return nil, err
 	}
 	// intentionally ignoring error
-	writeCachedProviderHoldings(providers)
+	if err := writeCachedProviderHoldings(providers); err != nil {
+		return nil, fmt.Errorf("writing to cache dir: %w", err)
+	}
 	return providers, err
 }

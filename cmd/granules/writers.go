@@ -12,10 +12,6 @@ import (
 
 type outputWriter func(internal.GranuleResult, io.Writer, []string) error
 
-func longWriter(zult internal.GranuleResult, w io.Writer, fields []string) error {
-	return nil
-}
-
 func shortWriter(zult internal.GranuleResult, w io.Writer, _ []string) error {
 	fields := []string{"name", "size", "native_id", "concept_id", "revision_id"}
 	t := table.NewWriter()
@@ -82,7 +78,10 @@ func jsonWriter(zult internal.GranuleResult, w io.Writer, fields []string) error
 }
 
 func csvWriter(zult internal.GranuleResult, w io.Writer, fields []string) error {
-	w.Write([]byte(strings.Join(fields, ",") + "\n"))
+	_, err := w.Write([]byte(strings.Join(fields, ",") + "\n"))
+	if err != nil {
+		return err
+	}
 
 	for granule := range zult.Ch {
 		vals := []string{}
@@ -90,7 +89,10 @@ func csvWriter(zult internal.GranuleResult, w io.Writer, fields []string) error 
 		for _, name := range fields {
 			vals = append(vals, fmt.Sprintf("%v", m[name]))
 		}
-		w.Write([]byte(strings.Join(vals, ",") + "\n"))
+		_, err := w.Write([]byte(strings.Join(vals, ",") + "\n"))
+		if err != nil {
+			return err
+		}
 	}
 	return zult.Err()
 }

@@ -3,10 +3,9 @@ package internal
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
-	"log"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 	"time"
 
@@ -57,7 +56,7 @@ func TestSearchCollectionParams(t *testing.T) {
 }
 
 func Test_newCollectionFromUMM(t *testing.T) {
-	dat, err := ioutil.ReadFile("testdata/aerdt_collection.umm_json")
+	dat, err := os.ReadFile("testdata/aerdt_collection.umm_json")
 	require.NoError(t, err)
 
 	col := newCollectionFromUMM(gjson.Parse(string(dat)).Get("items.0"))
@@ -85,7 +84,7 @@ func TestSearchCollections(t *testing.T) {
 				w.Header().Set("cmr-hits", hits)
 			}
 			w.WriteHeader(status)
-			w.Write([]byte(body))
+			_, _ = w.Write([]byte(body))
 		}))
 		url := fmt.Sprintf("http://%s", ts.Listener.Addr())
 		origURL := defaultCMRURL
@@ -99,7 +98,7 @@ func TestSearchCollections(t *testing.T) {
 	doGet := func(t *testing.T, params *SearchCollectionParams) ScrollResult[Collection] {
 		t.Helper()
 
-		api := NewCMRSearchAPI(log.Default())
+		api := NewCMRSearchAPI()
 		// make sure we're not waiting long
 		zult, err := api.SearchCollections(context.Background(), params)
 		require.NoError(t, err)
@@ -108,7 +107,7 @@ func TestSearchCollections(t *testing.T) {
 	}
 
 	t.Run("get", func(t *testing.T) {
-		dat, err := ioutil.ReadFile("testdata/aerdt_collection.umm_json")
+		dat, err := os.ReadFile("testdata/aerdt_collection.umm_json")
 		require.NoError(t, err)
 		require.True(t, gjson.Valid(string(dat)))
 
