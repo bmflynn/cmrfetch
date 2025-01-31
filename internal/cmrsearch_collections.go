@@ -219,8 +219,12 @@ func (api *CMRSearchAPI) SearchCollections(ctx context.Context, params *SearchCo
 	url := fmt.Sprintf("%s/collections.umm_json?%s", defaultCMRSearchURL, query.Encode())
 
 	zult, err := api.Get(ctx, url)
+	// FIXME: Get never returns an error
 	if err != nil {
 		return ScrollResult[Collection]{}, err
+	}
+	if zult.Err() != nil {
+		return ScrollResult[Collection]{}, zult.Err()
 	}
 
 	gzult := newScrollResult[Collection]()

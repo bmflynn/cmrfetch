@@ -64,8 +64,6 @@ func (r ScrollResult[T]) Hits() int {
 }
 
 func (api *CMRSearchAPI) Get(ctx context.Context, url string) (ScrollResult[gjson.Result], error) {
-	log.Debug("method=GET url=%s", url)
-
 	result := newScrollResult[gjson.Result]()
 
 	// only ever sent to once with initial hits value
@@ -75,11 +73,14 @@ func (api *CMRSearchAPI) Get(ctx context.Context, url string) (ScrollResult[gjso
 		defer close(result.Ch)
 		defer close(hitsCh)
 
+		page := 1
 		var searchAfter string
 		for {
+			log.Debug("method=GET page=%v url=%s", page, url)
 			req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 			if err != nil {
 				result.setErr(fmt.Errorf("create request: %w", err))
+				log.Debug("request create: %s", result.err)
 				return
 			}
 			if searchAfter != "" {
@@ -88,26 +89,33 @@ func (api *CMRSearchAPI) Get(ctx context.Context, url string) (ScrollResult[gjso
 			resp, err := api.client.Do(req)
 			if err != nil {
 				result.setErr(fmt.Errorf("protocol error: %w", err))
+				log.Debug("request do: %s", result.err)
 				return
 			}
 			defer resp.Body.Close()
 			if resp.StatusCode != http.StatusOK {
 				result.setErr(api.newCMRError(resp))
+				log.Debug("request != ok: %s", result.err)
 				return
 			}
 
 			hits, err := strconv.Atoi(resp.Header.Get("cmr-hits"))
 			if err != nil {
 				result.setErr(fmt.Errorf("failed to parse cmr-hits header as int: %s", resp.Header.Get("cmr-hits")))
+				log.Debug("request hits: %s", result.err)
 				return
 			}
+			// Hits is the same for all pages, only send once
 			if !sentHits {
+				log.Debug("sending hits: %v", hits)
 				hitsCh <- hits
+				sentHits = true
 			}
 
 			body, err := io.ReadAll(resp.Body)
 			if err != nil {
 				result.setErr(fmt.Errorf("reading response: %w", err))
+				log.Debug("request read: %s", result.err)
 				return
 			}
 			items := gjson.Get(string(body), "items").Array()
@@ -122,8 +130,10 @@ func (api *CMRSearchAPI) Get(ctx context.Context, url string) (ScrollResult[gjso
 			// No results or empty search-after-header indicates pagination is done
 			searchAfter = resp.Header.Get("cmr-search-after")
 			if searchAfter == "" || len(items) == 0 {
+				log.Debug("no more results")
 				return
 			}
+			page += 1
 		}
 	}()
 
