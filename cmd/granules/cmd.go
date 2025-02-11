@@ -100,6 +100,8 @@ NASA Earthdata Authentication
 		failOnError(err)
 		clobber, err := flags.GetBool("download-clobber")
 		failOnError(err)
+		downloadSkipChecksum, err := flags.GetBool("download-skip-checksum")
+		failOnError(err)
 
 		fields, err := flags.GetStringSlice("fields")
 		failOnError(err)
@@ -123,7 +125,7 @@ NASA Earthdata Authentication
 		api := internal.NewCMRSearchAPI()
 
 		if destdir != "" {
-			err = doDownload(context.TODO(), api, params, destdir, token, netrc, clobber, yes, concurrency)
+			err = doDownload(context.TODO(), api, params, destdir, token, netrc, clobber, yes, downloadSkipChecksum, concurrency)
 		} else {
 			err = do(api, params, output, fields)
 		}
@@ -137,17 +139,27 @@ NASA Earthdata Authentication
 
 func init() {
 	flags := Cmd.Flags()
+	flags.SortFlags = false
 
 	flags.BoolP("verbose", "v", false, "Verbose output")
 	flags.BoolP("yes", "y", false, "Answer yes to any prompts when using --download.")
+
 	flags.StringP("download", "d", "",
 		"Download the resulting granules to the directory provided. If the directory does not "+
 			fmt.Sprintf("exist it will be created. More than %v total granules in the ", maxResultsWithoutPrompt)+
 			"result set will require confirmation, which can be skipped using --yes. By default, "+
-			"If a file exists in the destination directory it will be skipped; see --download-clobber. "+
+			"If a file exists by name in the destination directory it will be skipped; see --download-clobber. "+
 			"Checksums are verified for all downloaded files, if a checksum is available.")
 	flags.BoolP("download-clobber", "C", false, "Overwrite any existing files when downloading.")
 	flags.Int("download-concurrency", defaultDownloadConcurrency, "Number of concurrent downloads")
+	flags.BoolP(
+		"download-skip-checksum",
+		"S",
+		false,
+		"Enable skipping files where the remote checksum does not match the local checksum in addition "+
+			"to skipping files that exist by name. If the there is no checksum available in the remote "+
+			"metadata, exists checking is done by name only.",
+	)
 	flags.String("edltoken", "",
 		"Use a NASA EDL token for bearer-based authentication on redirect. Either this or netrc is "+
 			"necessary for NASA Earthdata authentication, which many providers use. See the NASA "+
