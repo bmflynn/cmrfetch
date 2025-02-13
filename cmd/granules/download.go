@@ -16,6 +16,34 @@ const (
 	defaultDownloadConcurrency = 4
 )
 
+func shouldDownload(
+	request *internal.DownloadRequest, clobber, skipByChecksum bool,
+	checksummer func(string, string) (string, error),
+	exister func(string) bool,
+) (bool, string) {
+	if clobber {
+		return true, ""
+	}
+	exists := exister(request.Dest)
+	if !exists {
+		return true, ""
+	}
+	if skipByChecksum {
+		if !internal.ChecksumAlgSupported(request.ChecksumAlg) {
+			return true, fmt.Sprintf("exists by name, checksum alg %s supported", request.ChecksumAlg)
+		}
+		checksum, err := checksummer(request.ChecksumAlg, request.Dest)
+		if err != nil {
+			return false, fmt.Sprintf("exists by name, checksum failed: %s", err)
+		} else if checksum == request.Checksum {
+			return false, "exists by name and checksum"
+		} else {
+			return true, "exists by name, but checksum differs"
+		}
+	}
+	return true, ""
+}
+
 func zultsToRequests(granules internal.GranuleResult, destdir string, clobber, skipByChecksum bool) chan internal.DownloadRequest {
 	requests := make(chan internal.DownloadRequest)
 	if !filepath.IsAbs(destdir) {
@@ -31,23 +59,15 @@ func zultsToRequests(granules internal.GranuleResult, destdir string, clobber, s
 				Checksum:    gran.Checksum,
 				ChecksumAlg: gran.ChecksumAlg,
 			}
-			if !clobber && internal.Exists(request.Dest) {
-				if skipByChecksum && internal.ChecksumAlgSupported(gran.ChecksumAlg) {
-					checksum, err := internal.Checksum(gran.ChecksumAlg, request.Dest)
-					if err != nil {
-						log.Printf("checksum failed for %v: %s", request.Dest, err)
-					} else if checksum == gran.Checksum {
-						log.Printf("skipping %s, exists by name, checksum", request.Dest)
-						continue
-					} else {
-						log.Debug("%s exists by name, checksum mismatch", request.Dest)
-					}
-				} else {
-					log.Printf("skipping %s, exists by name", request.Dest)
-					continue
+			ok, reason := shouldDownload(&request, clobber, skipByChecksum, internal.Checksum, internal.Exists)
+			if ok {
+				if reason != "" {
+					log.Debug("downloading %s, %s", request.Dest, reason)
 				}
+				requests <- request
+			} else {
+				log.Printf("skipping %s, %s", request.Dest, reason)
 			}
-			requests <- request
 		}
 	}()
 	return requests

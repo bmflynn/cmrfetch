@@ -11,6 +11,10 @@ import (
 	"os"
 )
 
+// ChecksumAlgSupported returns true if we support the named alg.
+//
+// This does not include all the algs listed in the UMM-G.
+// See https://wiki.earthdata.nasa.gov/display/CMR/Archive+And+Distribution+Information+for+Granules
 func ChecksumAlgSupported(alg string) bool {
 	switch alg {
 	case "SHA-256":
