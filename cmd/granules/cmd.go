@@ -156,9 +156,10 @@ func init() {
 		"download-skip-checksum",
 		"S",
 		false,
-		"Enable skipping files where the remote checksum does not match the local checksum in addition "+
+		"Enable skipping files where the remote checksum matches the local checksum in addition "+
 			"to skipping files that exist by name. If the there is no checksum available in the remote "+
-			"metadata, exists checking is done by name only.",
+			"metadata or the specified checksum algorithm is not supported, exists checking is done by "+
+			"name only. Currently supported checksum algorithms include MD5, SHA-256, SHA-384, and SHA-512.",
 	)
 	flags.String("edltoken", "",
 		"Use a NASA EDL token for bearer-based authentication on redirect. Either this or netrc is "+
