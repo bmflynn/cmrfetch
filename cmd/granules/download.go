@@ -16,7 +16,35 @@ const (
 	defaultDownloadConcurrency = 4
 )
 
-func zultsToRequests(granules internal.GranuleResult, destdir string, clobber bool) chan internal.DownloadRequest {
+func shouldDownload(
+	request *internal.DownloadRequest, clobber, skipByChecksum bool,
+	checksummer func(string, string) (string, error),
+	exister func(string) bool,
+) (bool, string) {
+	if clobber {
+		return true, ""
+	}
+	exists := exister(request.Dest)
+	if !exists {
+		return true, ""
+	}
+	if skipByChecksum {
+		if !internal.ChecksumAlgSupported(request.ChecksumAlg) {
+			return true, fmt.Sprintf("exists by name, checksum alg %s supported", request.ChecksumAlg)
+		}
+		checksum, err := checksummer(request.ChecksumAlg, request.Dest)
+		if err != nil {
+			return false, fmt.Sprintf("exists by name, checksum failed: %s", err)
+		} else if checksum == request.Checksum {
+			return false, "exists by name and checksum"
+		} else {
+			return true, "exists by name, but checksum differs"
+		}
+	}
+	return true, ""
+}
+
+func zultsToRequests(granules internal.GranuleResult, destdir string, clobber, skipByChecksum bool) chan internal.DownloadRequest {
 	requests := make(chan internal.DownloadRequest)
 	if !filepath.IsAbs(destdir) {
 		panic("destdir is not absolute")
@@ -31,11 +59,15 @@ func zultsToRequests(granules internal.GranuleResult, destdir string, clobber bo
 				Checksum:    gran.Checksum,
 				ChecksumAlg: gran.ChecksumAlg,
 			}
-			if !clobber && internal.Exists(request.Dest) {
-				log.Printf("exists %s", request.Dest)
-				continue
+			ok, reason := shouldDownload(&request, clobber, skipByChecksum, internal.Checksum, internal.Exists)
+			if ok {
+				if reason != "" {
+					log.Debug("downloading %s, %s", request.Dest, reason)
+				}
+				requests <- request
+			} else {
+				log.Printf("skipping %s, %s", request.Dest, reason)
 			}
-			requests <- request
 		}
 	}()
 	return requests
@@ -46,7 +78,7 @@ func doDownload(
 	api *internal.CMRSearchAPI,
 	params *internal.SearchGranuleParams,
 	destdir, token string,
-	netrc, clobber, yes bool,
+	netrc, clobber, yes, skipByChecksum bool,
 	concurrency int,
 ) error {
 	zult, err := api.SearchGranules(context.Background(), params)
@@ -88,7 +120,7 @@ func doDownload(
 	if err != nil {
 		return fmt.Errorf("getting absolute path for %s", destdir)
 	}
-	requests := zultsToRequests(zult, destdir, clobber)
+	requests := zultsToRequests(zult, destdir, clobber, skipByChecksum)
 	results, err := internal.FetchConcurrentWithContext(ctx, requests, fetcherFactory, concurrency)
 	if err != nil {
 		return fmt.Errorf("init fetcher: %s", err)
