@@ -170,9 +170,16 @@ func init() {
 			"necessary for NASA Earthdata authentication, which many providers use. See the NASA "+
 			"Earthdata Authentication above.")
 
-	flags.StringSliceP("nativeid", "N", nil, "granule native id")
-	flags.StringSliceP("collection", "c", nil, "Collection concept id")
-	flags.StringSliceP("shortname", "s", nil, "Collection short name")
+	flags.StringSliceP("nativeid", "N", nil, "Granule native id")
+	flags.StringSliceP("collection", "c", nil,
+		"Collection concept id. Collection concept ids can be found using the 'collections' command. "+
+			"The collection concept id encasulates the collection short name and version and therefore "+
+			"the --shortname and --version flags will be ignored when this flag is used.")
+	flags.StringSliceP("shortname", "s", nil,
+		"Collection short name. Typically this flag is used in conjunction with --version to ensure "+
+			"only granules for a single collection version are returned. This is not necessary when "+
+			"using --collection")
+	flags.StringSliceP("version", "V", nil, "Collection version")
 	flags.StringSliceP("filename", "f", nil,
 		"Filter on an approximation of the filename. Must be sepcified with --collection. In CMR metadata "+
 			"terms this searches the granule ur and producer granule id.")
@@ -194,9 +201,7 @@ func init() {
 			"results and must load all results in memory before rendering. Make sure to provide enough "+
 			"filters to limit the result set to a reasonable size or use json or csv output.")
 
-	cobra.CheckErr(flags.MarkHidden("shortname"))
 	cobra.CheckErr(flags.MarkDeprecated("yes", "Not used and will be ignored"))
-	cobra.CheckErr(flags.MarkDeprecated("shortname", "Provide the collection concept id instead"))
 }
 
 func do(api *internal.CMRSearchAPI, params *internal.SearchGranuleParams, writerName string, fields []string) error {
@@ -253,10 +258,16 @@ func newParams(flags *pflag.FlagSet) (*internal.SearchGranuleParams, error) {
 		params.NativeIDs(sa...)
 	}
 
-	if flags.Changed("shortname") {
+	if !flags.Changed("collection") && flags.Changed("shortname") {
 		sa, err := flags.GetStringSlice("shortname")
 		failOnError(err)
 		params.ShortNames(sa...)
+	}
+
+	if !flags.Changed("collection") && flags.Changed("version") {
+		sa, err := flags.GetStringSlice("version")
+		failOnError(err)
+		params.Versions(sa...)
 	}
 
 	if flags.Changed("filename") {

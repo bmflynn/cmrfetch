@@ -32,6 +32,7 @@ type SearchGranuleParams struct {
 	point         []float64
 	circle        []float64
 	polygon       []float64
+	versions      []string
 
 	timerangeStart *time.Time
 	timerangeEnd   *time.Time
@@ -48,6 +49,11 @@ func (p *SearchGranuleParams) DayNightFlag(name string) *SearchGranuleParams {
 
 func (p *SearchGranuleParams) ShortNames(name ...string) *SearchGranuleParams {
 	p.shortnames = name
+	return p
+}
+
+func (p *SearchGranuleParams) Versions(version ...string) *SearchGranuleParams {
+	p.versions = version
 	return p
 }
 
@@ -149,6 +155,11 @@ func (p *SearchGranuleParams) build() (url.Values, error) {
 			return query, fmt.Errorf("wrong number of values for point")
 		}
 		query.Set("point", joinFloats(p.point))
+	}
+	if len(p.versions) > 0 {
+		for _, version := range p.versions {
+			query.Add("version", version)
+		}
 	}
 	query.Set("sort_key", "-start_date")
 	return query, nil
