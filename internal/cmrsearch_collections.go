@@ -13,6 +13,27 @@ import (
 
 type Collection map[string]string
 
+func parseTemporalExtents(gj gjson.Result) []string {
+	temporalExtents := []string{}
+	for _, te := range gj.Get("umm.TemporalExtents").Array() {
+		for _, rng := range te.Get("RangeDateTimes").Array() {
+			start := rng.Get("BeginningDateTime").String()
+			end := rng.Get("EndingDateTime").String()
+			if end == "" && te.Get("EndsAtPresentFlag").Bool() {
+				end = "PRESENT"
+			}
+			temporalExtents = append(
+				temporalExtents,
+				fmt.Sprintf("%s / %s", start, end),
+			)
+		}
+		if s := te.Get("SingleDateTime"); s.Exists() {
+			temporalExtents = append(temporalExtents, s.String())
+		}
+	}
+	return temporalExtents
+}
+
 func newCollectionFromUMM(gj gjson.Result) Collection {
 	col := Collection{
 		"shortname":        gj.Get("umm.ShortName").String(),
@@ -26,6 +47,7 @@ func newCollectionFromUMM(gj gjson.Result) Collection {
 		"revision_date":    gj.Get("meta.revision-date").String(),
 		"abstract":         gj.Get("umm.Abstract").String(),
 		"data_type":        gj.Get("umm.CollectionDataType").String(),
+		"temporal_extents": strings.Join(parseTemporalExtents(gj), "\n"),
 	}
 	instruments := []string{}
 	for _, plat := range gj.Get("umm.Platforms").Array() {

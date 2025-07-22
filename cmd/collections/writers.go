@@ -41,6 +41,7 @@ func writeCollection(zult internal.CollectionResult, w io.Writer, long bool) err
 		"provider",
 		"revision_id",
 		"revision_date",
+		"temporal_extents",
 		"infourls",
 	}
 
