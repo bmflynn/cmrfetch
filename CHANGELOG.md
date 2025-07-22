@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-- Ability to skip downloads when local files exist with matching checksum
+- `--download-skip-checksum` flag to skip downloads when local files exist with matching checksum
 
 ## [v0.4.3] - 2025-01-31
 
