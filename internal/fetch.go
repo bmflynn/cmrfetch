@@ -34,9 +34,9 @@ func newHash(alg string) (hash.Hash, error) {
 	switch strings.ToLower(alg) {
 	case "md5":
 		hash = md5.New()
-	case "sha256":
+	case "sha256", "sha-256":
 		hash = sha256.New()
-	case "sha512":
+	case "sha512", "sha-512":
 		hash = sha512.New()
 	default:
 		return nil, fmt.Errorf("expected one of md5, sha256, sha512, got %s", alg)
