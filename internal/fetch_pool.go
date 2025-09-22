@@ -9,6 +9,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/bmflynn/cmrfetch/internal/log"
 )
 
 type FetchError struct {
@@ -98,12 +100,10 @@ func downloader(
 			defer os.Remove(dest.Name())
 
 			w := &writerHasher{Writer: dest}
-			skipchecksum := false
 			if req.ChecksumAlg != "" {
 				w.hash, err = newHash(req.ChecksumAlg)
 				if err != nil {
-					fmt.Println(err)
-					skipchecksum = true
+					log.Info("%s checksum not supported, skipping verification", req.ChecksumAlg)
 				}
 			}
 			_, err = fetch(ctx, zult.URL, w)
@@ -116,11 +116,9 @@ func downloader(
 				return fmt.Errorf("probable HTML download content, possibly indicating a bad auth redirect")
 			}
 
-			if !skipchecksum {
-				zult.Checksum = w.Checksum()
-				if zult.Checksum != req.Checksum {
-					return fmt.Errorf("got checksum %s, expected %s", zult.Checksum, req.Checksum)
-				}
+			zult.Checksum = w.Checksum()
+			if zult.Checksum != "" && zult.Checksum != req.Checksum {
+				return fmt.Errorf("got checksum %s, expected %s", zult.Checksum, req.Checksum)
 			}
 
 			zult.Size = w.size

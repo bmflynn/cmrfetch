@@ -39,7 +39,7 @@ func newHash(alg string) (hash.Hash, error) {
 	case "sha512", "sha-512":
 		hash = sha512.New()
 	default:
-		return nil, fmt.Errorf("WARNING: expected one of md5, sha256, sha512, got %q", alg)
+		return nil, fmt.Errorf("expected one of MD5, SHA-256, SHA-512, got %q", alg)
 	}
 	return hash, nil
 }
