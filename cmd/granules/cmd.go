@@ -6,7 +6,6 @@ import (
 	"os"
 	"regexp"
 	"strings"
-	"time"
 
 	"github.com/bmflynn/cmrfetch/internal"
 	"github.com/bmflynn/cmrfetch/internal/log"
@@ -15,8 +14,8 @@ import (
 )
 
 var (
-	timerange   internal.TimeRangeValue
-	validFields = []string{
+	timerange   internal.TimeRangeValue = internal.NewTimeRangeValue()
+	validFields                         = []string{
 		"name", "size", "checksum", "checksum_alg", "download_url", "native_id", "revision_id",
 		"concept_id", "collection", "download_direct_url", "daynight", "timerange", "boundingbox",
 		"provider_dates",
@@ -276,13 +275,7 @@ func newParams(flags *pflag.FlagSet) (*internal.SearchGranuleParams, error) {
 		params.Filenames(sa...)
 	}
 
-	if flags.Changed("timerange") {
-		params.Timerange(*timerange.Start, timerange.End)
-	} else {
-		end := time.Now().UTC()
-		start := end.Add(-time.Hour * 24)
-		params.Timerange(start, &end)
-	}
+	params.Timerange(*timerange.Start, timerange.End)
 
 	a, err := flags.GetFloat64Slice("polygon")
 	failOnError(err)

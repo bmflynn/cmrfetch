@@ -18,8 +18,15 @@ type TimeRangeValue struct {
 	End   *time.Time
 }
 
+func NewTimeRangeValue() TimeRangeValue {
+	tr := TimeRangeValue{}
+	tr.Set(tr.String())
+	return tr
+}
+
+// String returns a default range of 24 hours ago to now.
 func (v *TimeRangeValue) String() string {
-	now := time.Now().UTC()
+	now := time.Now().Add(-24 * time.Hour).UTC()
 	return now.Format(time.RFC3339) + ","
 }
 
