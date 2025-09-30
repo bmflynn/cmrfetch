@@ -21,7 +21,7 @@ func TestSplitChecksum(t *testing.T) {
 }
 
 func Test_newHash(t *testing.T) {
-	goodCases := []string{"md5", "MD5", "sha256", "sha512"}
+	goodCases := []string{"md5", "MD5", "sha256", "SHA-256", "sha512", "SHA-512"}
 	for _, test := range goodCases {
 		t.Run(test, func(t *testing.T) {
 			hash, err := newHash(test)
