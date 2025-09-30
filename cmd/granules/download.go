@@ -137,6 +137,9 @@ func doDownload(
 				zult.Duration.Seconds(),
 				(float64(zult.Size*8) / zult.Duration.Seconds() / (1024 * 1024)))
 		}
+		if zult.ChecksumVerificationSkipped != "" {
+			log.Printf("checksum skipped: %s", zult.ChecksumVerificationSkipped)
+		}
 	}
 	return nil
 }

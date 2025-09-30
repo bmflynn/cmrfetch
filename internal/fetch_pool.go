@@ -9,8 +9,6 @@ import (
 	"strings"
 	"sync"
 	"time"
-
-	"github.com/bmflynn/cmrfetch/internal/log"
 )
 
 type FetchError struct {
@@ -60,12 +58,13 @@ type DownloadRequest struct {
 }
 
 type DownloadResult struct {
-	URL      string
-	Path     string
-	Checksum string
-	Duration time.Duration
-	Size     int64
-	Err      error
+	URL                         string
+	Path                        string
+	Checksum                    string
+	ChecksumVerificationSkipped string // if we skipped checksum verification, this is why
+	Duration                    time.Duration
+	Size                        int64
+	Err                         error
 }
 
 // downloader downloads all requests using fetcher sending results to results. The provided context
@@ -103,7 +102,7 @@ func downloader(
 			if req.ChecksumAlg != "" {
 				w.hash, err = newHash(req.ChecksumAlg)
 				if err != nil {
-					log.Info("%s checksum not supported, skipping verification", req.ChecksumAlg)
+					zult.ChecksumVerificationSkipped = err.Error()
 				}
 			}
 			_, err = fetch(ctx, zult.URL, w)
