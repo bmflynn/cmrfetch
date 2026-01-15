@@ -54,10 +54,8 @@ func (r *ScrollResult[T]) setErr(err error) {
 }
 
 func (r *ScrollResult[T]) Err() error {
-	if r.mu != nil {
-		r.mu.Lock()
-		defer r.mu.Unlock()
-	}
+	r.mu.Lock()
+	defer r.mu.Unlock()
 	return r.err
 }
 

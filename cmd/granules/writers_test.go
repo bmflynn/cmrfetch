@@ -18,9 +18,7 @@ func TestJsonDocWriter(t *testing.T) {
 			{Name: "granule2"},
 		},
 	}
-	zult := internal.GranuleResult{
-		Ch: make(chan internal.Granule),
-	}
+	zult := internal.NewGranuleResult()
 	go func() {
 		defer close(zult.Ch)
 		for _, g := range granules.Items {

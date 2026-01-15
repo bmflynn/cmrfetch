@@ -263,3 +263,7 @@ func (api *CMRSearchAPI) SearchCollections(ctx context.Context, params *SearchCo
 }
 
 type CollectionResult = ScrollResult[Collection]
+
+func NewCollectionResult() CollectionResult {
+	return newScrollResult[Collection]()
+}

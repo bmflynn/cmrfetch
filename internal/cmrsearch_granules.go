@@ -272,6 +272,10 @@ func (api *CMRSearchAPI) SearchGranules(ctx context.Context, params *SearchGranu
 
 type GranuleResult = ScrollResult[Granule]
 
+func NewGranuleResult() GranuleResult {
+	return newScrollResult[Granule]()
+}
+
 type archiveInfo struct {
 	Size        string
 	Checksum    string
