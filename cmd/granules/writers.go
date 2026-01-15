@@ -1,6 +1,7 @@
 package granules
 
 import (
+	"bufio"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -74,6 +75,38 @@ func jsonWriter(zult internal.GranuleResult, w io.Writer, fields []string) error
 			panic("encoding output: " + err.Error())
 		}
 	}
+	return zult.Err()
+}
+
+func jsonDocWriter(zult internal.GranuleResult, w io.Writer, fields []string) error {
+	writer := bufio.NewWriter(w)
+	defer writer.Flush()
+	mustWrite := func(s string) {
+		if _, err := fmt.Fprint(w, s); err != nil {
+			panic("writing output: " + err.Error())
+		}
+	}
+
+	last := ""
+	mustWrite("{\"items\":[")
+	for granule := range zult.Ch {
+		dat, err := json.Marshal(granuleToMap(granule, fields))
+		if err != nil {
+			panic("marshalling output: " + err.Error())
+		}
+		cur := string(dat)
+		if last == "" {
+			last = cur
+			continue
+		} else {
+			mustWrite(last + ",")
+			last = cur
+		}
+	}
+	if last != "" {
+		mustWrite(last)
+	}
+	mustWrite("]}")
 	return zult.Err()
 }
 

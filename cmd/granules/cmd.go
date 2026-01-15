@@ -196,9 +196,11 @@ func init() {
 	flags.StringSlice("fields", defaultFields,
 		"Fields to include in output; ignored for --output=short. "+strings.Join(validFields, ", "))
 	flags.StringP("output", "o", "short",
-		"Output format. One of short, long, json, or, csv. The default output does not handle paged "+
+		"Output format. One of short, long, json, jsondoc, or, csv. The default output does not handle paged "+
 			"results and must load all results in memory before rendering. Make sure to provide enough "+
-			"filters to limit the result set to a reasonable size or use json or csv output.")
+			"filters to limit the result set to a reasonable size or use json or csv output. json output "+
+			"streams one item per line, i.e., no commas, no document structure. For a proper parseable "+
+			"json document with items use jsondoc.")
 
 	cobra.CheckErr(flags.MarkDeprecated("yes", "Not used and will be ignored"))
 }
@@ -212,6 +214,8 @@ func do(api *internal.CMRSearchAPI, params *internal.SearchGranuleParams, writer
 		writer = tablesWriter
 	case "json":
 		writer = jsonWriter
+	case "jsondoc":
+		writer = jsonDocWriter
 	case "csv":
 		writer = csvWriter
 	default:
