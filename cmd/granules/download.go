@@ -28,20 +28,20 @@ func shouldDownload(
 	if !exists {
 		return true, ""
 	}
-	if skipByChecksum {
-		if !internal.ChecksumAlgSupported(request.ChecksumAlg) {
-			return true, fmt.Sprintf("exists by name, checksum alg %s supported", request.ChecksumAlg)
-		}
-		checksum, err := checksummer(request.ChecksumAlg, request.Dest)
-		if err != nil {
-			return false, fmt.Sprintf("exists by name, checksum failed: %s", err)
-		} else if checksum == request.Checksum {
-			return false, "exists by name and checksum"
-		} else {
-			return true, "exists by name, but checksum differs"
-		}
+	if !skipByChecksum {
+		return false, "exists by name"
 	}
-	return true, ""
+	// Fall back to exists-by-name if we cannot verify the checksum
+	if !internal.ChecksumAlgSupported(request.ChecksumAlg) {
+		return false, fmt.Sprintf("exists by name, checksum alg %q not supported", request.ChecksumAlg)
+	}
+	checksum, err := checksummer(request.ChecksumAlg, request.Dest)
+	if err != nil {
+		return false, fmt.Sprintf("exists by name, checksum failed: %s", err)
+	} else if checksum == request.Checksum {
+		return false, "exists by name and checksum"
+	}
+	return true, "exists by name, but checksum differs"
 }
 
 func zultsToRequests(granules internal.GranuleResult, destdir string, clobber, skipByChecksum bool) chan internal.DownloadRequest {
