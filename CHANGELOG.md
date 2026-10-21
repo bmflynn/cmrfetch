@@ -5,16 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [v0.6.2] - 2026-10-21
+
+### Fixed
+
+- Use go 1.27.3 to mitigate CVE-2026-111943
+
 ## [v0.6.1] - 2026-09-30
 
-## Fixed
+### Fixed
 
 - Granule downloads no longer re-download files that already exist in the
   destination directory unless `--download-clobber` is specified.
 
 ## [v0.6.0] - 2026-01-15
 
-## Added
+### Added
 
 - Add new `jsondoc` output format for granules that outputs a full JSON document
   rather than individual lines of JSON objects.
