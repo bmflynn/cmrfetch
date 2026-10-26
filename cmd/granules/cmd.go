@@ -121,7 +121,9 @@ NASA Earthdata Authentication
 
 		log.SetVerbose(verbose)
 
+		token = internal.ResolveEDLToken(token)
 		api := internal.NewCMRSearchAPI()
+		api.SetToken(token)
 
 		if destdir != "" {
 			err = doDownload(context.TODO(), api, params, destdir, token, netrc, clobber, yes, downloadSkipChecksum, concurrency)
@@ -161,9 +163,10 @@ func init() {
 			"name only. Currently supported checksum algorithms include MD5, SHA-256, SHA-384, and SHA-512.",
 	)
 	flags.String("edltoken", "",
-		"Use a NASA EDL token for bearer-based authentication on redirect. Either this or netrc is "+
-			"necessary for NASA Earthdata authentication, which many providers use. See the NASA "+
-			"Earthdata Authentication above.")
+		"Use a NASA EDL token for bearer-based authentication for CMR searches and downloads. "+
+			"Either this or netrc is necessary for NASA Earthdata authentication, which many providers "+
+			"use. Defaults to the EDL_TOKEN environment variable. See the NASA Earthdata "+
+			"Authentication above.")
 	flags.Bool("netrc", true,
 		"Use netrc for basic authentication credentials on redirect. Either this or edltoken is "+
 			"necessary for NASA Earthdata authentication, which many providers use. See the NASA "+

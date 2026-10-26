@@ -106,5 +106,49 @@ func TestCMRSearchAPI(t *testing.T) {
 				require.Len(t, results, 1)
 			})
 		})
+
+		t.Run("token", func(t *testing.T) {
+			getWithToken := func(t *testing.T, url string, client *http.Client) ScrollResult[gjson.Result] {
+				t.Helper()
+
+				api := NewCMRSearchAPI()
+				api.SetToken("XXX")
+				if client != nil {
+					api.client = client
+				}
+				ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+				defer cancel()
+				zult, err := api.Get(ctx, url)
+				require.NoError(t, err)
+				for range zult.Ch {
+				}
+				return zult
+			}
+
+			t.Run("header present", func(t *testing.T) {
+				var gotAuth string
+				svr := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+					gotAuth = r.Header.Get("Authorization")
+					w.Header().Set("cmr-hits", "1")
+					_, err := w.Write([]byte(`{"items": [1]}`))
+					require.NoError(t, err)
+				}))
+				defer svr.Close()
+
+				zult := getWithToken(t, svr.URL, svr.Client())
+
+				require.NoError(t, zult.Err())
+				require.Equal(t, "Bearer XXX", gotAuth)
+			})
+
+			t.Run("non-https is error", func(t *testing.T) {
+				svr, url := newServer(t, `{"items": [1]}`, http.StatusOK, "1")
+				defer svr.Close()
+
+				zult := getWithToken(t, url, nil)
+
+				require.Error(t, zult.Err(), "expected error with http scheme")
+			})
+		})
 	})
 }

@@ -23,6 +23,8 @@ type CMRSearchAPI struct {
 	url      string
 	client   *http.Client
 	pageSize int
+	// If provided an authorization header is added to every request
+	token string
 }
 
 func NewCMRSearchAPI() *CMRSearchAPI {
@@ -31,6 +33,11 @@ func NewCMRSearchAPI() *CMRSearchAPI {
 		client:   http.DefaultClient,
 		pageSize: 200,
 	}
+}
+
+// SetToken sets a NASA EDL token to be sent as a bearer token with every request.
+func (api *CMRSearchAPI) SetToken(token string) {
+	api.token = token
 }
 
 type ScrollResult[T Granule | Collection | gjson.Result | Facet] struct {
@@ -76,12 +83,20 @@ func (api *CMRSearchAPI) Get(ctx context.Context, url string) (ScrollResult[gjso
 		page := 1
 		var searchAfter string
 		for {
-			log.Debug("method=GET page=%v url=%s", page, url)
+			log.Debug("method=GET page=%v edltoken=%v url=%s", page, api.token != "", url)
 			req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 			if err != nil {
 				result.setErr(fmt.Errorf("create request: %w", err))
 				log.Debug("request create: %s", result.err)
 				return
+			}
+			if api.token != "" {
+				if req.URL.Scheme != "https" {
+					result.setErr(fmt.Errorf("refusing to add bearer token to non-https url %s", req.URL))
+					log.Debug("request create: %s", result.err)
+					return
+				}
+				req.Header.Set("Authorization", "Bearer "+api.token)
 			}
 			if searchAfter != "" {
 				req.Header.Set("cmr-search-after", searchAfter)
