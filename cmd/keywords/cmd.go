@@ -13,6 +13,9 @@ import (
 func init() {
 	flags := Cmd.Flags()
 	flags.BoolP("verbose", "v", false, "Verbose output")
+	flags.String("edltoken", "",
+		"NASA EDL token sent as a bearer token with CMR search requests, which may be necessary "+
+			"to see access-restricted results. Defaults to the EDL_TOKEN environment variable.")
 }
 
 func failOnError(err error) {
@@ -46,10 +49,13 @@ correct value.
 	RunE: func(cmd *cobra.Command, args []string) error {
 		verbose, err := cmd.Flags().GetBool("verbose")
 		failOnError(err)
+		token, err := cmd.Flags().GetString("edltoken")
+		failOnError(err)
 
 		log.SetVerbose(verbose)
 
 		api := internal.NewCMRSearchAPI()
+		api.SetToken(internal.ResolveEDLToken(token))
 
 		zult, err := api.SearchFacets(context.Background(), args[0], nil)
 		if err != nil {

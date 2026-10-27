@@ -25,6 +25,9 @@ func init() {
 	flags := Cmd.Flags()
 
 	flags.BoolP("verbose", "v", false, "Verbose output")
+	flags.String("edltoken", "",
+		"NASA EDL token sent as a bearer token with CMR search requests, which may be necessary "+
+			"to see access-restricted results. Defaults to the EDL_TOKEN environment variable.")
 	flags.StringP("keyword", "k", "",
 		"Keyword search or search pattern (supporting ? or *) to search over collection metadata")
 	flags.StringSliceP("provider", "P", []string{},
@@ -101,9 +104,12 @@ var Cmd = &cobra.Command{
 
 		verbose, err := flags.GetBool("verbose")
 		failOnError(err)
+		token, err := flags.GetString("edltoken")
+		failOnError(err)
 
 		log.SetVerbose(verbose)
 		api := internal.NewCMRSearchAPI()
+		api.SetToken(internal.ResolveEDLToken(token))
 
 		var writer outputWriter
 		switch output {

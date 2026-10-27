@@ -109,7 +109,6 @@ func doDownload(
 		}
 	}
 
-	token = internal.ResolveEDLToken(token)
 	log.Debug("auth netrc:%v edltoken:%v\n", netrc, token != "")
 
 	fetcherFactory := func() (internal.Fetcher, error) {
